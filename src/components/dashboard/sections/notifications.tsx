@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { RefreshCw, Search, Eye } from 'lucide-react';
+import { RefreshCw, Search, Eye, Download, Ban, RotateCcw, CheckSquare, Square } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export function NotificationsSection() {
   const [rows, setRows] = useState<NotificationRow[]>([]);
@@ -21,6 +22,8 @@ export function NotificationsSection() {
   const [status, setStatus] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<NotificationRow | null>(null);
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -49,6 +52,72 @@ export function NotificationsSection() {
         r.errorCode?.includes(search))
     : rows;
 
+  function toggleCheck(id: string) {
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    if (checked.size === filtered.length) {
+      setChecked(new Set());
+    } else {
+      setChecked(new Set(filtered.map((r) => r.id)));
+    }
+  }
+
+  function exportNotifications(format: 'csv' | 'json', filters: { channel: string; status: string }) {
+    const params = new URLSearchParams({ format });
+    if (filters.channel !== 'all') params.set('channel', filters.channel);
+    if (filters.status !== 'all') params.set('status', filters.status);
+    // Master key is required for export endpoint — fetch it then redirect
+    fetch('/api/dashboard/master-key')
+      .then((r) => r.json())
+      .then((d) => {
+        const url = `/api/v1/notifications/export?${params.toString()}`;
+        // Use fetch with auth header to download
+        fetch(url, { headers: { Authorization: `Bearer ${d.fullKey}` } })
+          .then((r) => r.blob())
+          .then((blob) => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `notifications-${Date.now()}.${format}`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+            toast({ title: 'تم التصدير', description: `${format.toUpperCase()} — ${filtered.length} صف` });
+          });
+      });
+  }
+
+  async function bulkAction(action: 'cancel' | 'retry') {
+    const ids = Array.from(checked);
+    try {
+      const res = await fetch(`/api/v1/notifications/bulk-${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      });
+      const masterRes = await fetch('/api/dashboard/master-key');
+      const masterData = await masterRes.json();
+      const res2 = await fetch(`/api/v1/notifications/bulk-${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${masterData.fullKey}` },
+        body: JSON.stringify({ ids }),
+      });
+      const d = await res2.json();
+      if (!res2.ok) throw new Error(d?.error?.message ?? 'HTTP ' + res2.status);
+      const label = action === 'cancel' ? 'إلغاء' : 'إعادة محاولة';
+      toast({ title: `تم ${label}`, description: `${d[action === 'cancel' ? 'cancelled' : 'retried']} من ${d.requested}` });
+      setChecked(new Set());
+      load();
+    } catch (e) {
+      toast({ title: 'فشل', description: (e as Error).message, variant: 'destructive' });
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-end justify-between gap-4 flex-wrap">
@@ -58,9 +127,45 @@ export function NotificationsSection() {
             كل إشعار تمت معالجته على المنصة. الإجمالي {total.toLocaleString('ar-EG')}.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 ml-2 ${loading ? 'animate-spin' : ''}`} /> تحديث
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 ml-2 ${loading ? 'animate-spin' : ''}`} /> تحديث
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => exportNotifications('csv', { channel, status })}
+          >
+            <Download className="h-4 w-4 ml-2" /> تصدير CSV
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => exportNotifications('json', { channel, status })}
+          >
+            <Download className="h-4 w-4 ml-2" /> تصدير JSON
+          </Button>
+          {checked.size > 0 && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-amber-300 border-amber-500/30"
+                onClick={() => bulkAction('cancel')}
+              >
+                <Ban className="h-4 w-4 ml-2" /> إلغاء ({checked.size})
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-blue-300 border-blue-500/30"
+                onClick={() => bulkAction('retry')}
+              >
+                <RotateCcw className="h-4 w-4 ml-2" /> إعادة محاولة ({checked.size})
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       <Card>
@@ -114,6 +219,13 @@ export function NotificationsSection() {
               <table className="w-full text-sm">
                 <thead className="border-b border-border bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
                   <tr>
+                    <th className="px-4 py-2.5 w-8">
+                      <button onClick={toggleAll} className="text-muted-foreground hover:text-foreground">
+                        {checked.size === filtered.length && filtered.length > 0
+                          ? <CheckSquare className="h-4 w-4" />
+                          : <Square className="h-4 w-4" />}
+                      </button>
+                    </th>
                     <th className="text-right font-medium px-4 py-2.5">القناة</th>
                     <th className="text-right font-medium px-4 py-2.5">الحالة</th>
                     <th className="text-right font-medium px-4 py-2.5">الأولوية</th>
@@ -127,6 +239,13 @@ export function NotificationsSection() {
                 <tbody>
                   {filtered.map((n) => (
                     <tr key={n.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      <td className="px-4 py-2.5">
+                        <button onClick={() => toggleCheck(n.id)} className="text-muted-foreground hover:text-foreground">
+                          {checked.has(n.id)
+                            ? <CheckSquare className="h-4 w-4 text-emerald-400" />
+                            : <Square className="h-4 w-4" />}
+                        </button>
+                      </td>
                       <td className="px-4 py-2.5"><ChannelBadge channel={n.channel} /></td>
                       <td className="px-4 py-2.5"><StatusBadge status={n.status} /></td>
                       <td className="px-4 py-2.5"><PriorityBadge priority={n.priority} /></td>
