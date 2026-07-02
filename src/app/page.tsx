@@ -26,18 +26,18 @@ interface NavItem {
 }
 
 const NAV: NavItem[] = [
-  { id: 'overview',    label: 'Overview',     icon: <Activity className="h-4 w-4" />,     group: 'admin' },
-  { id: 'channels',    label: 'Channels',     icon: <Bell className="h-4 w-4" />,         group: 'admin' },
-  { id: 'notifications', label: 'Notifications', icon: <Send className="h-4 w-4" />,      group: 'admin' },
-  { id: 'analytics',   label: 'Analytics',    icon: <BarChart3 className="h-4 w-4" />,    group: 'admin' },
-  { id: 'devices',     label: 'Devices',      icon: <Smartphone className="h-4 w-4" />,   group: 'admin' },
-  { id: 'projects',    label: 'Projects',     icon: <FolderKanban className="h-4 w-4" />, group: 'admin' },
-  { id: 'apps',        label: 'Applications', icon: <AppWindow className="h-4 w-4" />,    group: 'admin' },
-  { id: 'api-keys',    label: 'API Keys',     icon: <KeyRound className="h-4 w-4" />,     group: 'admin' },
-  { id: 'templates',   label: 'Templates',    icon: <FileText className="h-4 w-4" />,     group: 'admin' },
-  { id: 'audit',       label: 'Audit Log',    icon: <ScrollText className="h-4 w-4" />,   group: 'admin' },
-  { id: 'playground',  label: 'API Playground', icon: <FlaskConical className="h-4 w-4" />, group: 'developer' },
-  { id: 'sdk-docs',    label: 'SDK & Docs',   icon: <BookOpen className="h-4 w-4" />,     group: 'developer' },
+  { id: 'overview',      label: 'النظرة العامة',     icon: <Activity className="h-4 w-4" />,        group: 'admin' },
+  { id: 'channels',      label: 'القنوات',           icon: <Bell className="h-4 w-4" />,            group: 'admin' },
+  { id: 'notifications', label: 'الإشعارات',         icon: <Send className="h-4 w-4" />,            group: 'admin' },
+  { id: 'analytics',     label: 'التحليلات',         icon: <BarChart3 className="h-4 w-4" />,       group: 'admin' },
+  { id: 'devices',       label: 'الأجهزة',           icon: <Smartphone className="h-4 w-4" />,      group: 'admin' },
+  { id: 'projects',      label: 'المشاريع',          icon: <FolderKanban className="h-4 w-4" />,    group: 'admin' },
+  { id: 'apps',          label: 'التطبيقات',         icon: <AppWindow className="h-4 w-4" />,       group: 'admin' },
+  { id: 'api-keys',      label: 'مفاتيح API',        icon: <KeyRound className="h-4 w-4" />,        group: 'admin' },
+  { id: 'templates',     label: 'القوالب',           icon: <FileText className="h-4 w-4" />,        group: 'admin' },
+  { id: 'audit',         label: 'سجل التدقيق',       icon: <ScrollText className="h-4 w-4" />,      group: 'admin' },
+  { id: 'playground',    label: 'مختبر API',         icon: <FlaskConical className="h-4 w-4" />,    group: 'developer' },
+  { id: 'sdk-docs',      label: 'SDK والوثائق',     icon: <BookOpen className="h-4 w-4" />,        group: 'developer' },
 ];
 
 export default function Home() {
@@ -50,7 +50,6 @@ export default function Home() {
       const h = window.location.hash.slice(1);
       if (h && NAV.some((n) => n.id === h)) setSection(h as SectionId);
     };
-    // Defer to avoid synchronous setState-in-effect lint rule
     queueMicrotask(apply);
     window.addEventListener('hashchange', apply);
     return () => window.removeEventListener('hashchange', apply);
@@ -69,12 +68,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
-      {/* Top bar */}
+      {/* الشريط العلوي */}
       <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 lg:px-6">
         <button
           className="lg:hidden -ml-1 p-1 rounded-md hover:bg-muted"
           onClick={() => setSidebarOpen((s) => !s)}
-          aria-label="Toggle sidebar"
+          aria-label="تبديل القائمة الجانبية"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M3 6h18M3 12h18M3 18h18" strokeLinecap="round" />
@@ -85,29 +84,29 @@ export default function Home() {
             NF
           </div>
           <div className="flex flex-col leading-none">
-            <span className="font-semibold tracking-tight">NotifyForge</span>
-            <span className="text-[10px] text-muted-foreground">Notification Infrastructure</span>
+            <span className="font-semibold tracking-tight">نوتيفاي فورج</span>
+            <span className="text-[10px] text-muted-foreground">البنية التحتية للإشعارات</span>
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
           <span className="hidden md:inline-flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2 py-1 text-xs text-emerald-300">
-            <ShieldCheck className="h-3 w-3" /> enterprise plan
+            <ShieldCheck className="h-3 w-3" /> خطة المؤسسات
           </span>
           <span className="hidden md:inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/30 px-2 py-1 text-xs text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> all systems operational
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> كل الأنظمة تعمل
           </span>
         </div>
       </header>
 
       <div className="flex flex-1">
-        {/* Sidebar */}
+        {/* القائمة الجانبية */}
         <aside className={cn(
-          'fixed lg:sticky top-14 z-30 h-[calc(100vh-3.5rem)] w-60 shrink-0 border-r border-border bg-background overflow-y-auto transition-transform',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+          'fixed lg:sticky top-14 z-30 h-[calc(100vh-3.5rem)] w-60 shrink-0 border-l border-border bg-background overflow-y-auto transition-transform',
+          sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0',
         )}>
           <nav className="p-3 space-y-6">
             <div>
-              <div className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Admin Dashboard</div>
+              <div className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">لوحة المسؤول</div>
               <div className="space-y-0.5">
                 {adminItems.map((item) => (
                   <button
@@ -127,7 +126,7 @@ export default function Home() {
               </div>
             </div>
             <div>
-              <div className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Developer</div>
+              <div className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">المطوّر</div>
               <div className="space-y-0.5">
                 {devItems.map((item) => (
                   <button
@@ -156,7 +155,7 @@ export default function Home() {
           />
         )}
 
-        {/* Main content */}
+        {/* المحتوى الرئيسي */}
         <main className="flex-1 min-w-0 p-4 lg:p-6">
           {section === 'overview'      && <OverviewSection />}
           {section === 'channels'      && <ChannelsSection />}
@@ -173,12 +172,12 @@ export default function Home() {
         </main>
       </div>
 
-      {/* Footer */}
+      {/* التذييل */}
       <footer className="mt-auto border-t border-border bg-background/95 px-4 lg:px-6 py-3">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <div>NotifyForge · Notification Infrastructure Platform · v1.0.0</div>
+          <div>نوتيفاي فورج · منصة البنية التحتية للإشعارات · الإصدار 1.0.0</div>
           <div className="hidden md:block">
-            Channel isolation · No AI routing · Explicit client choice · Production-grade
+            عزل القنوات · بلا توجيه بالذكاء الاصطناعي · اختيار صريح للعميل · جاهز للإنتاج
           </div>
         </div>
       </footer>

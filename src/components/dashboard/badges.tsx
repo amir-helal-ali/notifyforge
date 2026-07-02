@@ -15,10 +15,22 @@ export function StatusBadge({ status }: { status: string }) {
     expired: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
     revoked: 'bg-red-500/15 text-red-300 border-red-500/30',
   };
+  const labels: Record<string, string> = {
+    queued: 'في الانتظار',
+    processing: 'قيد المعالجة',
+    sent: 'مُرسَل',
+    delivered: 'تم التسليم',
+    failed: 'فشل',
+    cancelled: 'ملغى',
+    active: 'نشط',
+    invalid: 'غير صالح',
+    expired: 'منتهي',
+    revoked: 'مُلغى',
+  };
   const cls = styles[status] ?? 'bg-zinc-500/15 text-zinc-300 border-zinc-500/30';
   return (
     <span className={cn('inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium', cls)}>
-      {status}
+      {labels[status] ?? status}
     </span>
   );
 }
@@ -30,25 +42,31 @@ export function PriorityBadge({ priority }: { priority: string }) {
     high: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
     critical: 'bg-red-500/15 text-red-300 border-red-500/30',
   };
+  const labels: Record<string, string> = {
+    low: 'منخفضة',
+    normal: 'عادية',
+    high: 'عالية',
+    critical: 'حرجة',
+  };
   const cls = styles[priority] ?? styles.normal;
   return (
     <span className={cn('inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium uppercase tracking-wide', cls)}>
-      {priority}
+      {labels[priority] ?? priority}
     </span>
   );
 }
 
 export function ChannelBadge({ channel }: { channel: string }) {
   const labels: Record<string, string> = {
-    push_android: 'Android (FCM)',
+    push_android: 'أندرويد (FCM)',
     push_ios: 'iOS (APNs)',
-    push_huawei: 'Huawei (HMS)',
+    push_huawei: 'هواوي (HMS)',
     webpush: 'Web Push',
-    email: 'Email',
+    email: 'البريد',
     sms: 'SMS',
-    inapp: 'In-App',
+    inapp: 'داخل التطبيق',
     webhook: 'Webhook',
-    desktop: 'Desktop',
+    desktop: 'سطح المكتب',
   };
   return (
     <span className="inline-flex items-center rounded-md border border-border bg-muted/40 px-2 py-0.5 text-xs font-medium">

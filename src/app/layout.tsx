@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Cairo } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -13,18 +13,25 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const cairo = Cairo({
+  variable: "--font-cairo",
+  subsets: ["arabic", "latin"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "NotifyForge — Notification Infrastructure Platform",
+  title: "نوتيفاي فورج — منصة البنية التحتية للإشعارات",
   description:
-    "Production-grade notification infrastructure. Channel-isolated delivery for Mobile Push (FCM/APNs/Huawei), Web Push, Email, SMS, In-App, Webhooks, and Desktop.",
+    "منصة إشعارات بمستوى الإنتاج. إرسال معزول حسب القناة عبر Push للهواتف (FCM/APNs/Huawei)، Web Push، البريد الإلكتروني، SMS، الإشعارات داخل التطبيق، Webhooks، وسطح المكتب.",
   keywords: [
     "NotifyForge",
-    "notification infrastructure",
-    "push notifications",
+    "نوتيفاي فورج",
+    "البنية التحتية للإشعارات",
+    "إشعارات الدفع",
     "FCM",
     "APNs",
     "Huawei HMS",
-    "email",
+    "البريد الإلكتروني",
     "SMS",
     "webhooks",
   ],
@@ -37,9 +44,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} antialiased bg-background text-foreground font-arabic`}
       >
         {children}
         <Toaster />

@@ -23,6 +23,27 @@ const CHANNEL_COLORS: Record<string, string> = {
   desktop: '#a855f7',
 };
 
+const CHANNEL_LABELS_AR: Record<string, string> = {
+  push_android: 'أندرويد',
+  push_ios: 'iOS',
+  push_huawei: 'هواوي',
+  webpush: 'Web Push',
+  email: 'البريد',
+  sms: 'SMS',
+  inapp: 'داخل التطبيق',
+  webhook: 'Webhook',
+  desktop: 'سطح المكتب',
+};
+
+const STATUS_LABELS_AR: Record<string, string> = {
+  queued: 'في الانتظار',
+  processing: 'قيد المعالجة',
+  sent: 'مُرسَل',
+  delivered: 'تم التسليم',
+  failed: 'فشل',
+  cancelled: 'ملغى',
+};
+
 export function OverviewSection() {
   const [data, setData] = useState<OverviewData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,9 +51,16 @@ export function OverviewSection() {
 
   useEffect(() => {
     let mounted = true;
-    dashboardApi.overview()
-      .then((d) => mounted && (setData(d), setLoading(false)))
-      .catch((e) => mounted && (setError(e.message), setLoading(false)));
+    const run = async () => {
+      setLoading(true);
+      try {
+        const d = await dashboardApi.overview();
+        if (mounted) { setData(d); setLoading(false); }
+      } catch (e) {
+        if (mounted) { setError((e as Error).message); setLoading(false); }
+      }
+    };
+    run();
     const t = setInterval(() => {
       dashboardApi.overview().then((d) => mounted && setData(d)).catch(() => {});
     }, 15000);
@@ -40,10 +68,10 @@ export function OverviewSection() {
   }, []);
 
   if (loading) return <OverviewSkeleton />;
-  if (error) return <div className="text-red-400">Error: {error}</div>;
+  if (error) return <div className="text-red-400">خطأ: {error}</div>;
   if (!data) return null;
 
-  // Build series for chart
+  // بناء سلسلة البيانات للرسم البياني
   const seriesData: { bucket: string; [k: string]: string | number }[] = [];
   const buckets = data.byChannel.length > 0
     ? Object.values(data.series)[0]?.map((b) => b.bucket) ?? []
@@ -57,35 +85,40 @@ export function OverviewSection() {
     seriesData.push(row);
   }
 
-  const statusData = data.byStatus.map((s) => ({ name: s.status, value: s.count }));
+  const statusData = data.byStatus.map((s) => ({ name: STATUS_LABELS_AR[s.status] ?? s.status, value: s.count }));
   const statusColors: Record<string, string> = {
     queued: '#f59e0b', processing: '#3b82f6', sent: '#06b6d4',
     delivered: '#10b981', failed: '#ef4444', cancelled: '#71717a',
   };
 
+  const channelBars = data.byChannel.map((c) => ({
+    name: CHANNEL_LABELS_AR[c.channel] ?? c.channel,
+    count: c.count,
+  }));
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Platform Overview</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">النظرة العامة على المنصة</h1>
         <p className="text-sm text-muted-foreground">
-          Real-time view across all channels and projects. Refreshed every 15s.
+          عرض لحظي عبر كل القنوات والمشاريع. يُحدّث كل 15 ثانية.
         </p>
       </div>
 
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-        <KpiCard label="Notifications (24h)" value={data.counts.last24h} accent="blue" icon={<Bell className="h-4 w-4" />} />
-        <KpiCard label="Total Sent" value={data.counts.notifications} accent="emerald" icon={<Send className="h-4 w-4" />} />
-        <KpiCard label="Devices" value={data.counts.devices} icon={<Smartphone className="h-4 w-4" />} />
-        <KpiCard label="Projects" value={data.counts.projects} icon={<FolderKanban className="h-4 w-4" />} />
-        <KpiCard label="API Keys" value={data.counts.apiKeys} icon={<KeyRound className="h-4 w-4" />} />
-        <KpiCard label="Templates" value={data.counts.templates} icon={<FileText className="h-4 w-4" />} />
+        <KpiCard label="الإشعارات (24س)" value={data.counts.last24h} accent="blue" icon={<Bell className="h-4 w-4" />} />
+        <KpiCard label="إجمالي المُرسَل" value={data.counts.notifications} accent="emerald" icon={<Send className="h-4 w-4" />} />
+        <KpiCard label="الأجهزة" value={data.counts.devices} icon={<Smartphone className="h-4 w-4" />} />
+        <KpiCard label="المشاريع" value={data.counts.projects} icon={<FolderKanban className="h-4 w-4" />} />
+        <KpiCard label="مفاتيح API" value={data.counts.apiKeys} icon={<KeyRound className="h-4 w-4" />} />
+        <KpiCard label="القوالب" value={data.counts.templates} icon={<FileText className="h-4 w-4" />} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Activity className="h-4 w-4" /> Notifications — last 24 hours
+              <Activity className="h-4 w-4" /> الإشعارات — آخر 24 ساعة
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -103,16 +136,16 @@ export function OverviewSection() {
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                   <XAxis
                     dataKey="bucket"
-                    tickFormatter={(v) => new Date(v).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    tickFormatter={(v) => new Date(v).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
                     stroke="rgba(255,255,255,0.4)"
                     fontSize={11}
                   />
                   <YAxis stroke="rgba(255,255,255,0.4)" fontSize={11} allowDecimals={false} />
                   <Tooltip
-                    contentStyle={{ background: 'rgba(20,20,20,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
-                    labelFormatter={(v) => new Date(v as string).toLocaleString()}
+                    contentStyle={{ background: 'rgba(20,20,20,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, direction: 'rtl' }}
+                    labelFormatter={(v) => new Date(v as string).toLocaleString('ar-EG')}
                   />
-                  <Legend />
+                  <Legend formatter={(value) => CHANNEL_LABELS_AR[value as string] ?? value} />
                   {data.byChannel.map((ch) => (
                     <Area
                       key={ch.channel}
@@ -132,7 +165,7 @@ export function OverviewSection() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Status distribution</CardTitle>
+            <CardTitle className="text-base">توزيع الحالات</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-72">
@@ -151,7 +184,7 @@ export function OverviewSection() {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ background: 'rgba(20,20,20,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
+                    contentStyle={{ background: 'rgba(20,20,20,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, direction: 'rtl' }}
                   />
                   <Legend />
                 </PieChart>
@@ -163,17 +196,17 @@ export function OverviewSection() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Notifications per channel</CardTitle>
+          <CardTitle className="text-base">الإشعارات لكل قناة</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.byChannel}>
+              <BarChart data={channelBars}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="channel" stroke="rgba(255,255,255,0.4)" fontSize={11} />
+                <XAxis dataKey="name" stroke="rgba(255,255,255,0.4)" fontSize={11} />
                 <YAxis stroke="rgba(255,255,255,0.4)" fontSize={11} allowDecimals={false} />
                 <Tooltip
-                  contentStyle={{ background: 'rgba(20,20,20,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8 }}
+                  contentStyle={{ background: 'rgba(20,20,20,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, direction: 'rtl' }}
                 />
                 <Bar dataKey="count" radius={[6, 6, 0, 0]}>
                   {data.byChannel.map((c) => (

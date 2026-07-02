@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { dashboardApi, type NotificationRow } from '@/lib/dashboard-api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChannelBadge, StatusBadge, PriorityBadge, EmptyState } from '@/components/dashboard/badges';
 import { Button } from '@/components/ui/button';
@@ -53,13 +53,13 @@ export function NotificationsSection() {
     <div className="space-y-4">
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Notifications</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">الإشعارات</h1>
           <p className="text-sm text-muted-foreground">
-            Every notification ever processed by the platform. {total.toLocaleString()} total.
+            كل إشعار تمت معالجته على المنصة. الإجمالي {total.toLocaleString('ar-EG')}.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} /> Refresh
+          <RefreshCw className={`h-4 w-4 ml-2 ${loading ? 'animate-spin' : ''}`} /> تحديث
         </Button>
       </div>
 
@@ -67,39 +67,39 @@ export function NotificationsSection() {
         <CardHeader className="pb-3">
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative flex-1 min-w-48">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Filter by id, externalId, error…"
+                placeholder="تصفية بالمعرّف، externalId، الخطأ…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-8"
+                className="pr-8"
               />
             </div>
             <Select value={channel} onValueChange={setChannel}>
-              <SelectTrigger className="w-44"><SelectValue placeholder="Channel" /></SelectTrigger>
+              <SelectTrigger className="w-44"><SelectValue placeholder="القناة" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All channels</SelectItem>
-                <SelectItem value="push_android">Android (FCM)</SelectItem>
+                <SelectItem value="all">كل القنوات</SelectItem>
+                <SelectItem value="push_android">أندرويد (FCM)</SelectItem>
                 <SelectItem value="push_ios">iOS (APNs)</SelectItem>
-                <SelectItem value="push_huawei">Huawei (HMS)</SelectItem>
+                <SelectItem value="push_huawei">هواوي (HMS)</SelectItem>
                 <SelectItem value="webpush">Web Push</SelectItem>
-                <SelectItem value="email">Email</SelectItem>
+                <SelectItem value="email">البريد</SelectItem>
                 <SelectItem value="sms">SMS</SelectItem>
-                <SelectItem value="inapp">In-App</SelectItem>
+                <SelectItem value="inapp">داخل التطبيق</SelectItem>
                 <SelectItem value="webhook">Webhook</SelectItem>
-                <SelectItem value="desktop">Desktop</SelectItem>
+                <SelectItem value="desktop">سطح المكتب</SelectItem>
               </SelectContent>
             </Select>
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectTrigger className="w-40"><SelectValue placeholder="الحالة" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="queued">Queued</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="sent">Sent</SelectItem>
-                <SelectItem value="delivered">Delivered</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="all">كل الحالات</SelectItem>
+                <SelectItem value="queued">في الانتظار</SelectItem>
+                <SelectItem value="processing">قيد المعالجة</SelectItem>
+                <SelectItem value="sent">مُرسَل</SelectItem>
+                <SelectItem value="delivered">تم التسليم</SelectItem>
+                <SelectItem value="failed">فشل</SelectItem>
+                <SelectItem value="cancelled">ملغى</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -108,19 +108,19 @@ export function NotificationsSection() {
           {loading ? (
             <div className="space-y-2 p-4">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div>
           ) : filtered.length === 0 ? (
-            <div className="p-4"><EmptyState title="No notifications found" hint="Adjust filters or send a test from the API Playground." /></div>
+            <div className="p-4"><EmptyState title="لا توجد إشعارات" hint="عدّل الفلاتر أو أرسل إشعاراً تجريبياً من مختبر API." /></div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="border-b border-border bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
                   <tr>
-                    <th className="text-left font-medium px-4 py-2.5">Channel</th>
-                    <th className="text-left font-medium px-4 py-2.5">Status</th>
-                    <th className="text-left font-medium px-4 py-2.5">Priority</th>
-                    <th className="text-left font-medium px-4 py-2.5">Project / App</th>
-                    <th className="text-left font-medium px-4 py-2.5">Provider</th>
-                    <th className="text-left font-medium px-4 py-2.5">Attempts</th>
-                    <th className="text-left font-medium px-4 py-2.5">Created</th>
+                    <th className="text-right font-medium px-4 py-2.5">القناة</th>
+                    <th className="text-right font-medium px-4 py-2.5">الحالة</th>
+                    <th className="text-right font-medium px-4 py-2.5">الأولوية</th>
+                    <th className="text-right font-medium px-4 py-2.5">المشروع / التطبيق</th>
+                    <th className="text-right font-medium px-4 py-2.5">المزوّد</th>
+                    <th className="text-right font-medium px-4 py-2.5">المحاولات</th>
+                    <th className="text-right font-medium px-4 py-2.5">تاريخ الإنشاء</th>
                     <th className="px-4 py-2.5"></th>
                   </tr>
                 </thead>
@@ -136,7 +136,7 @@ export function NotificationsSection() {
                       </td>
                       <td className="px-4 py-2.5"><code className="text-xs">{n.provider ?? '—'}</code></td>
                       <td className="px-4 py-2.5 tabular-nums text-xs">{n.attemptCount}/{n.maxAttempts}</td>
-                      <td className="px-4 py-2.5 text-xs text-muted-foreground">{new Date(n.createdAt).toLocaleString()}</td>
+                      <td className="px-4 py-2.5 text-xs text-muted-foreground">{new Date(n.createdAt).toLocaleString('ar-EG')}</td>
                       <td className="px-4 py-2.5">
                         <Button variant="ghost" size="icon" onClick={() => setSelected(n)} className="h-7 w-7">
                           <Eye className="h-3.5 w-3.5" />
@@ -147,10 +147,10 @@ export function NotificationsSection() {
                 </tbody>
               </table>
               <div className="flex items-center justify-between border-t border-border px-4 py-2 text-xs text-muted-foreground">
-                <span>Page {page} — showing {filtered.length} of {total.toLocaleString()}</span>
+                <span>الصفحة {page} — عرض {filtered.length} من {total.toLocaleString('ar-EG')}</span>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Previous</Button>
-                  <Button size="sm" variant="outline" disabled={filtered.length < 25} onClick={() => setPage((p) => p + 1)}>Next</Button>
+                  <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>السابق</Button>
+                  <Button size="sm" variant="outline" disabled={filtered.length < 25} onClick={() => setPage((p) => p + 1)}>التالي</Button>
                 </div>
               </div>
             </div>
@@ -161,8 +161,8 @@ export function NotificationsSection() {
       <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>Notification detail</DialogTitle>
-            <DialogDescription>Full notification metadata, provider response, and lifecycle events.</DialogDescription>
+            <DialogTitle>تفاصيل الإشعار</DialogTitle>
+            <DialogDescription>البيانات الكاملة للإشعار، استجابة المزوّد، وأحداث دورة الحياة.</DialogDescription>
           </DialogHeader>
           {selected && <NotificationDetail id={selected.id} />}
         </DialogContent>
@@ -183,24 +183,24 @@ function NotificationDetail({ id }: { id: string }) {
   }, [id]);
 
   if (loading) return <div className="p-4 space-y-2"><Skeleton className="h-6 w-1/3" /><Skeleton className="h-40" /></div>;
-  if (!data) return <div className="p-4 text-sm text-muted-foreground">Not found.</div>;
+  if (!data) return <div className="p-4 text-sm text-muted-foreground">غير موجود.</div>;
 
   return (
     <ScrollArea className="max-h-[60vh]">
       <div className="space-y-4 p-1">
         <div className="grid grid-cols-2 gap-3 text-xs">
-          <DetailRow label="Notification ID" value={data.id} mono />
-          <DetailRow label="External ID" value={data.externalId ?? '—'} mono />
-          <DetailRow label="Channel" value={<ChannelBadge channel={data.channel} />} />
-          <DetailRow label="Status" value={<StatusBadge status={data.status} />} />
-          <DetailRow label="Priority" value={<PriorityBadge priority={data.priority} />} />
-          <DetailRow label="Provider" value={data.provider ?? '—'} mono />
-          <DetailRow label="Provider Message ID" value={data.providerMessageId ?? '—'} mono />
-          <DetailRow label="Attempts" value={`${data.attemptCount} / ${data.maxAttempts}`} />
-          <DetailRow label="Created" value={new Date(data.createdAt).toLocaleString()} />
-          <DetailRow label="Sent" value={data.sentAt ? new Date(data.sentAt).toLocaleString() : '—'} />
-          <DetailRow label="Delivered" value={data.deliveredAt ? new Date(data.deliveredAt).toLocaleString() : '—'} />
-          <DetailRow label="Failed" value={data.failedAt ? new Date(data.failedAt).toLocaleString() : '—'} />
+          <DetailRow label="معرّف الإشعار" value={data.id} mono />
+          <DetailRow label="المعرّف الخارجي" value={data.externalId ?? '—'} mono />
+          <DetailRow label="القناة" value={<ChannelBadge channel={data.channel} />} />
+          <DetailRow label="الحالة" value={<StatusBadge status={data.status} />} />
+          <DetailRow label="الأولوية" value={<PriorityBadge priority={data.priority} />} />
+          <DetailRow label="المزوّد" value={data.provider ?? '—'} mono />
+          <DetailRow label="معرّف رسالة المزوّد" value={data.providerMessageId ?? '—'} mono />
+          <DetailRow label="المحاولات" value={`${data.attemptCount} / ${data.maxAttempts}`} />
+          <DetailRow label="أُنشئ في" value={new Date(data.createdAt).toLocaleString('ar-EG')} />
+          <DetailRow label="أُرسِل في" value={data.sentAt ? new Date(data.sentAt).toLocaleString('ar-EG') : '—'} />
+          <DetailRow label="تُسُلِّم في" value={data.deliveredAt ? new Date(data.deliveredAt).toLocaleString('ar-EG') : '—'} />
+          <DetailRow label="فشل في" value={data.failedAt ? new Date(data.failedAt).toLocaleString('ar-EG') : '—'} />
         </div>
 
         {data.errorCode && (
@@ -211,21 +211,21 @@ function NotificationDetail({ id }: { id: string }) {
         )}
 
         <div>
-          <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Payload</div>
+          <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">الحمولة (Payload)</div>
           <pre className="rounded-md bg-muted p-3 text-xs overflow-auto max-h-40">{JSON.stringify(data.payload, null, 2)}</pre>
         </div>
         <div>
-          <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Target</div>
+          <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">الهدف (Target)</div>
           <pre className="rounded-md bg-muted p-3 text-xs overflow-auto max-h-40">{JSON.stringify(data.target, null, 2)}</pre>
         </div>
 
         <div>
-          <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Lifecycle events</div>
+          <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">أحداث دورة الحياة</div>
           <div className="space-y-1">
             {data.events.map((e: any) => (
               <div key={e.id} className="flex items-center gap-3 rounded-md border border-border bg-muted/20 px-2 py-1 text-xs">
                 <span className="font-mono text-emerald-300">{e.type}</span>
-                <span className="text-muted-foreground">{new Date(e.createdAt).toLocaleString()}</span>
+                <span className="text-muted-foreground">{new Date(e.createdAt).toLocaleString('ar-EG')}</span>
               </div>
             ))}
           </div>
@@ -233,14 +233,14 @@ function NotificationDetail({ id }: { id: string }) {
 
         {data.logs && data.logs.length > 0 && (
           <div>
-            <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Logs</div>
+            <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">السجلات</div>
             <div className="space-y-1">
               {data.logs.map((l: any) => (
                 <div key={l.id} className="flex items-center gap-3 rounded-md border border-border bg-muted/20 px-2 py-1 text-xs">
                   <span className={`font-mono ${l.level === 'error' ? 'text-red-300' : l.level === 'warn' ? 'text-amber-300' : 'text-blue-300'}`}>[{l.level}]</span>
                   <span className="font-mono text-muted-foreground">{l.stage}</span>
                   <span className="flex-1">{l.message}</span>
-                  <span className="text-muted-foreground">{new Date(l.createdAt).toLocaleTimeString()}</span>
+                  <span className="text-muted-foreground">{new Date(l.createdAt).toLocaleTimeString('ar-EG')}</span>
                 </div>
               ))}
             </div>

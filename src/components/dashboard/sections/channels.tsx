@@ -43,10 +43,10 @@ export function ChannelsSection() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Channels</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">القنوات</h1>
         <p className="text-sm text-muted-foreground max-w-3xl">
-          Each channel is an isolated service with its own API endpoint, worker queue, and provider integration.
-          The platform never re-routes between channels — clients explicitly choose where to send.
+          كل قناة هي خدمة معزولة لها نقطة API مستقلة، طابور عمال مستقل، وتكامل مع مزود خاص بها.
+          المنصة لا تقوم أبداً بإعادة التوجيه بين القنوات — العميل يحدد بوضوح إلى أين يُرسِل.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -65,20 +65,20 @@ export function ChannelsSection() {
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Provider</span>
+                <span className="text-muted-foreground">المزوّد</span>
                 <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{ch.provider}</code>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Endpoint</span>
+                <span className="text-muted-foreground">نقطة النهاية</span>
                 <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{ch.endpoint}</code>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Scope</span>
+                <span className="text-muted-foreground">الصلاحية</span>
                 <code className="rounded bg-muted px-1.5 py-0.5 text-xs">{ch.scope}</code>
               </div>
               <div className="flex items-center justify-between border-t border-border pt-2">
-                <span className="text-muted-foreground">Total sent</span>
-                <span className="text-lg font-semibold tabular-nums">{ch.totalSent.toLocaleString()}</span>
+                <span className="text-muted-foreground">إجمالي المُرسَل</span>
+                <span className="text-lg font-semibold tabular-nums">{ch.totalSent.toLocaleString('ar-EG')}</span>
               </div>
             </CardContent>
           </Card>

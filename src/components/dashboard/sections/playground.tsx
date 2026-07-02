@@ -22,23 +22,23 @@ interface Sample {
 
 const SAMPLES: Record<ChannelKey, Sample> = {
   push_android: {
-    description: 'Android push via FCM with high priority and collapse key.',
+    description: 'Push لأندرويد عبر FCM بأولوية عالية ومفتاح طي (collapse key).',
     priority: 'high',
     target: { externalUserId: 'user-001' },
     payload: {
-      title: 'Order shipped',
-      body: 'Your order #12345 is on the way.',
+      title: 'تم شحن الطلب',
+      body: 'طلبك رقم 12345 في الطريق.',
       data: { orderId: '12345', deepLink: 'myapp://orders/12345' },
       android: { priority: 'high', collapseKey: 'order-status', ttl: '60s' },
       fcmOptions: { analyticsLabel: 'order_shipped' },
     },
   },
   push_ios: {
-    description: 'iOS push via APNs with mutable-content (for Notification Service Extension) and interruption-level.',
+    description: 'Push لـ iOS عبر APNs مع mutable-content (لـ Notification Service Extension) ومستوى مقاطعة.',
     priority: 'high',
     target: { externalUserId: 'user-001' },
     payload: {
-      alert: { title: 'New message', body: 'You have 1 new message from Sarah' },
+      alert: { title: 'رسالة جديدة', body: 'لديك رسالة جديدة من سارة' },
       badge: 3,
       sound: 'default',
       category: 'MESSAGE_CATEGORY',
@@ -50,68 +50,68 @@ const SAMPLES: Record<ChannelKey, Sample> = {
     },
   },
   push_huawei: {
-    description: 'Huawei HMS Push Kit message with urgency HIGH.',
+    description: 'رسالة Huawei HMS Push Kit بأولوية HIGH.',
     priority: 'high',
     target: { externalUserId: 'user-001' },
     payload: {
       message: {
-        notification: { title: 'Promo', body: '20% off this weekend!' },
+        notification: { title: 'عرض ترويجي', body: 'خصم 20% هذا الأسبوع!' },
         android: { urgency: 'HIGH', ttl: '60s', collapseKey: 1 },
       },
     },
   },
   webpush: {
-    description: 'Web Push notification with action buttons and high urgency.',
+    description: 'إشعار Web Push مع أزرار إجراء ومستوى إلحاح عالٍ.',
     priority: 'normal',
     target: { externalUserId: 'user-001' },
     payload: {
-      title: 'Background sync complete',
-      body: '3 new items were synced.',
+      title: 'اكتملت المزامنة في الخلفية',
+      body: 'تمت مزامنة 3 عناصر جديدة.',
       icon: '/icon-192.png',
       badge: '/badge-72.png',
       tag: 'sync',
       requireInteraction: false,
       urgency: 'high',
       actions: [
-        { action: 'view', title: 'View' },
-        { action: 'dismiss', title: 'Dismiss' },
+        { action: 'view', title: 'عرض' },
+        { action: 'dismiss', title: 'تجاهل' },
       ],
       data: { url: '/inbox' },
     },
   },
   email: {
-    description: 'Transactional email with HTML body and reply-to.',
+    description: 'بريد إلكتروني معاملي مع محتوى HTML و reply-to.',
     priority: 'normal',
     target: { email: 'customer@example.com' },
     payload: {
       from: 'notifications@notifyforge.dev',
       to: 'customer@example.com',
       replyTo: 'support@notifyforge.dev',
-      subject: 'Your receipt for order #12345',
-      html: '<h1>Thanks for your purchase!</h1><p>Order <strong>#12345</strong> has been confirmed.</p>',
-      text: 'Thanks for your purchase! Order #12345 has been confirmed.',
+      subject: 'إيصال طلبك رقم 12345',
+      html: '<h1>شكراً لشرائك!</h1><p>تم تأكيد الطلب <strong>#12345</strong>.</p>',
+      text: 'شكراً لشرائك! تم تأكيد الطلب #12345.',
       category: 'transactional',
     },
   },
   sms: {
-    description: 'SMS via Twilio with from-number.',
+    description: 'رسالة SMS عبر Twilio مع رقم مُرسِل.',
     priority: 'normal',
     target: { phone: '+15551234567' },
     payload: {
       from: '+15550000000',
       to: '+15551234567',
-      body: 'Your verification code is 482739. It expires in 10 minutes.',
+      body: 'رمز التحقق الخاص بك هو 482739. ينتهي خلال 10 دقائق.',
       encoding: 'gsm7',
     },
   },
   inapp: {
-    description: 'In-app notification persisted for client polling.',
+    description: 'إشعار داخل التطبيق محفوظ للعميل ليسحبه.',
     priority: 'normal',
     target: { externalUserId: 'user-001' },
     payload: {
       userId: 'user-001',
-      title: 'Friend request',
-      body: 'Sarah wants to connect with you.',
+      title: 'طلب صداقة',
+      body: 'سارة تريد التواصل معك.',
       category: 'social',
       actionUrl: '/friends/requests',
       imageUrl: 'https://cdn.notifyforge.dev/sarah-avatar.png',
@@ -119,7 +119,7 @@ const SAMPLES: Record<ChannelKey, Sample> = {
     },
   },
   webhook: {
-    description: 'Outbound webhook with HMAC-SHA256 signature.',
+    description: 'Webhook صادر مع توقيع HMAC-SHA256.',
     priority: 'normal',
     target: {},
     payload: {
@@ -133,18 +133,37 @@ const SAMPLES: Record<ChannelKey, Sample> = {
     },
   },
   desktop: {
-    description: 'Desktop notification via NotifyForge Desktop SDK.',
+    description: 'إشعار سطح المكتب عبر SDK الخاص بـ NotifyForge.',
     priority: 'normal',
     target: { externalUserId: 'user-001' },
     payload: {
-      title: 'Build complete',
-      body: 'main #4521 succeeded in 4m 12s.',
+      title: 'اكتمل البناء',
+      body: 'main #4521 نجح في 4د 12ث.',
       icon: '/build-icon.png',
       urgency: 'normal',
-      actions: [{ action: 'view', title: 'View logs' }],
+      actions: [{ action: 'view', title: 'عرض السجلات' }],
       data: { buildId: '4521' },
     },
   },
+};
+
+const CHANNEL_LABELS: Record<ChannelKey, string> = {
+  push_android: 'أندرويد (FCM)',
+  push_ios: 'iOS (APNs)',
+  push_huawei: 'هواوي (HMS)',
+  webpush: 'Web Push',
+  email: 'البريد',
+  sms: 'SMS',
+  inapp: 'داخل التطبيق',
+  webhook: 'Webhook',
+  desktop: 'سطح المكتب',
+};
+
+const PRIORITY_LABELS: Record<string, string> = {
+  low: 'منخفضة',
+  normal: 'عادية',
+  high: 'عالية',
+  critical: 'حرجة',
 };
 
 export function PlaygroundSection() {
@@ -171,10 +190,10 @@ export function PlaygroundSection() {
       const p = JSON.parse(payload);
       const res = await dashboardApi.sendTest({ channel, target: t, payload: p, priority });
       setResult({ ok: true, data: res });
-      toast({ title: 'Sent', description: `Notification ${res.id} queued` });
+      toast({ title: 'تم الإرسال', description: `تم وضع الإشعار ${res.id} في الطابور` });
     } catch (e) {
       setResult({ ok: false, error: (e as Error).message });
-      toast({ title: 'Failed', description: (e as Error).message, variant: 'destructive' });
+      toast({ title: 'فشل', description: (e as Error).message, variant: 'destructive' });
     } finally {
       setSending(false);
     }
@@ -183,10 +202,10 @@ export function PlaygroundSection() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">API Playground</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">مختبر API</h1>
         <p className="text-sm text-muted-foreground max-w-3xl">
-          Send a real notification through any channel using the master dashboard key.
-          The platform executes exactly what you submit — no AI routing, no channel switching.
+          أرسل إشعاراً حقيقياً عبر أي قناة باستخدام مفتاح لوحة التحكم الرئيسي.
+          المنصة تنفذ بالضبط ما تُرسِله — بلا توجيه بالذكاء الاصطناعي، بلا تبديل للقنوات.
         </p>
       </div>
 
@@ -194,22 +213,22 @@ export function PlaygroundSection() {
         <Card className="lg:col-span-2">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-3">
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Channel</Label>
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">القناة</Label>
               <Select value={channel} onValueChange={(v) => setChannel(v as ChannelKey)}>
                 <SelectTrigger className="w-64"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {(Object.keys(SAMPLES) as ChannelKey[]).map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                    <SelectItem key={c} value={c}>{CHANNEL_LABELS[c]}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <Select value={priority} onValueChange={(v) => setPriority(v as any)}>
-                <SelectTrigger className="w-32 ml-auto"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-32 mr-auto"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">low</SelectItem>
-                  <SelectItem value="normal">normal</SelectItem>
-                  <SelectItem value="high">high</SelectItem>
-                  <SelectItem value="critical">critical</SelectItem>
+                  <SelectItem value="low">منخفضة</SelectItem>
+                  <SelectItem value="normal">عادية</SelectItem>
+                  <SelectItem value="high">عالية</SelectItem>
+                  <SelectItem value="critical">حرجة</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -217,60 +236,60 @@ export function PlaygroundSection() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <Label className="text-xs">Target (JSON)</Label>
+              <Label className="text-xs">الهدف (JSON)</Label>
               <Textarea rows={6} value={target} onChange={(e) => setTarget(e.target.value)} className="font-mono text-xs" />
             </div>
             <div>
-              <Label className="text-xs">Payload (JSON)</Label>
+              <Label className="text-xs">الحمولة (JSON)</Label>
               <Textarea rows={14} value={payload} onChange={(e) => setPayload(e.target.value)} className="font-mono text-xs" />
             </div>
             <Button onClick={send} disabled={sending}>
-              {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-              Send via {channel}
+              {sending ? <Loader2 className="h-4 w-4 ml-2 animate-spin" /> : <Send className="h-4 w-4 ml-2" />}
+              إرسال عبر {CHANNEL_LABELS[channel]}
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Result</CardTitle>
+            <CardTitle className="text-base">النتيجة</CardTitle>
           </CardHeader>
           <CardContent>
             {!result ? (
               <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                Send a notification to see the response.
+                أرسل إشعاراً لرؤية الاستجابة.
               </div>
             ) : result.ok ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-emerald-300">
                   <CheckCircle2 className="h-5 w-5" />
-                  <span className="font-medium">Accepted</span>
+                  <span className="font-medium">تم القبول</span>
                   <StatusBadge status={result.data.status} />
                 </div>
                 <div className="rounded-md bg-muted p-3 text-xs">
-                  <div className="text-muted-foreground mb-1">Notification ID</div>
+                  <div className="text-muted-foreground mb-1">معرّف الإشعار</div>
                   <code className="break-all">{result.data.id}</code>
                 </div>
                 <div className="rounded-md bg-muted p-3 text-xs">
-                  <div className="text-muted-foreground mb-1">Channel</div>
+                  <div className="text-muted-foreground mb-1">القناة</div>
                   <code>{result.data.channel}</code>
                 </div>
                 <div className="rounded-md bg-muted p-3 text-xs">
-                  <div className="text-muted-foreground mb-1">Queued at</div>
-                  <code>{new Date(result.data.queuedAt).toLocaleString()}</code>
+                  <div className="text-muted-foreground mb-1">وُضِع في الطابور في</div>
+                  <code>{new Date(result.data.queuedAt).toLocaleString('ar-EG')}</code>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Open the <strong>Notifications</strong> tab to watch the status transition from
-                  <code className="text-foreground"> queued</code> →
-                  <code className="text-foreground"> processing</code> →
-                  <code className="text-foreground"> delivered</code>.
+                  افتح تبويب <strong>الإشعارات</strong> لمشاهدة انتقال الحالة من
+                  <code className="text-foreground"> في الانتظار</code> ←
+                  <code className="text-foreground"> قيد المعالجة</code> ←
+                  <code className="text-foreground"> تم التسليم</code>.
                 </p>
               </div>
             ) : (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-red-300">
                   <AlertCircle className="h-5 w-5" />
-                  <span className="font-medium">Error</span>
+                  <span className="font-medium">خطأ</span>
                 </div>
                 <pre className="rounded-md bg-red-500/5 border border-red-500/30 p-3 text-xs text-red-200 whitespace-pre-wrap">{result.error}</pre>
               </div>
@@ -281,10 +300,10 @@ export function PlaygroundSection() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Equivalent cURL</CardTitle>
+          <CardTitle className="text-base">مكافئ cURL</CardTitle>
         </CardHeader>
         <CardContent>
-          <pre className="rounded-md bg-muted p-4 text-xs overflow-auto">{buildCurl(channel, target, payload, priority)}</pre>
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-auto ltr-content">{buildCurl(channel, target, payload, priority)}</pre>
         </CardContent>
       </Card>
     </div>

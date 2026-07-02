@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { dashboardApi, type ProjectRow, type AppRow, type ApiKeyRow, type TemplateRow } from '@/lib/dashboard-api';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/dashboard/badges';
 import { Button } from '@/components/ui/button';
@@ -33,12 +33,12 @@ export function ProjectsSection() {
   async function submit() {
     try {
       await dashboardApi.createProject({ name: form.name, slug: form.slug || undefined, description: form.description || undefined });
-      toast({ title: 'Project created', description: form.name });
+      toast({ title: 'تم إنشاء المشروع', description: form.name });
       setOpen(false);
       setForm({ name: '', slug: '', description: '' });
       load();
     } catch (e) {
-      toast({ title: 'Failed', description: (e as Error).message, variant: 'destructive' });
+      toast({ title: 'فشل', description: (e as Error).message, variant: 'destructive' });
     }
   }
 
@@ -46,15 +46,15 @@ export function ProjectsSection() {
     <div className="space-y-4">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
-          <p className="text-sm text-muted-foreground">Tenant isolation boundary. Each project has its own applications, API keys, and devices.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">المشاريع</h1>
+          <p className="text-sm text-muted-foreground">حد العزل بين المستأجرين. كل مشروع له تطبيقاته ومفاتيح API وأجهزته الخاصة.</p>
         </div>
-        <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" /> New project</Button>
+        <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 ml-2" /> مشروع جديد</Button>
       </div>
       {loading ? (
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-32" />)}</div>
       ) : rows.length === 0 ? (
-        <EmptyState title="No projects" hint="Create your first project." />
+        <EmptyState title="لا توجد مشاريع" hint="أنشئ مشروعك الأول." />
       ) : (
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {rows.map((p) => (
@@ -71,10 +71,10 @@ export function ProjectsSection() {
                 </div>
                 {p.description && <p className="mt-3 text-xs text-muted-foreground">{p.description}</p>}
                 <div className="mt-4 grid grid-cols-4 gap-2 text-center text-xs">
-                  <div><div className="font-semibold tabular-nums">{p._count.applications}</div><div className="text-muted-foreground">apps</div></div>
-                  <div><div className="font-semibold tabular-nums">{p._count.devices}</div><div className="text-muted-foreground">devices</div></div>
-                  <div><div className="font-semibold tabular-nums">{p._count.notifications}</div><div className="text-muted-foreground">notif</div></div>
-                  <div><div className="font-semibold tabular-nums">{p._count.apiKeys}</div><div className="text-muted-foreground">keys</div></div>
+                  <div><div className="font-semibold tabular-nums">{p._count.applications}</div><div className="text-muted-foreground">تطبيق</div></div>
+                  <div><div className="font-semibold tabular-nums">{p._count.devices}</div><div className="text-muted-foreground">جهاز</div></div>
+                  <div><div className="font-semibold tabular-nums">{p._count.notifications}</div><div className="text-muted-foreground">إشعار</div></div>
+                  <div><div className="font-semibold tabular-nums">{p._count.apiKeys}</div><div className="text-muted-foreground">مفتاح</div></div>
                 </div>
               </CardContent>
             </Card>
@@ -84,22 +84,22 @@ export function ProjectsSection() {
       <CreateDialog
         open={open}
         onOpenChange={setOpen}
-        title="Create project"
-        description="A project isolates applications, devices, and API keys."
+        title="إنشاء مشروع"
+        description="المشروع يعزل التطبيقات والأجهزة ومفاتيح API."
         onSubmit={submit}
       >
         <div className="space-y-3">
           <div>
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="My Project" />
+            <Label htmlFor="name">الاسم</Label>
+            <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="مشروعي" />
           </div>
           <div>
-            <Label htmlFor="slug">Slug (optional)</Label>
+            <Label htmlFor="slug">المعرّف (اختياري)</Label>
             <Input id="slug" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} placeholder="my-project" />
           </div>
           <div>
-            <Label htmlFor="desc">Description</Label>
-            <Textarea id="desc" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="What is this project for?" />
+            <Label htmlFor="desc">الوصف</Label>
+            <Textarea id="desc" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="ما هو هذا المشروع؟" />
           </div>
         </div>
       </CreateDialog>
@@ -132,39 +132,48 @@ export function AppsSection() {
   async function submit() {
     try {
       await dashboardApi.createApp({ projectId: form.projectId, name: form.name, slug: form.slug || undefined, platform: form.platform, description: form.description || undefined });
-      toast({ title: 'Application created' });
+      toast({ title: 'تم إنشاء التطبيق' });
       setOpen(false);
       setForm({ ...form, name: '', slug: '', description: '' });
       load();
     } catch (e) {
-      toast({ title: 'Failed', description: (e as Error).message, variant: 'destructive' });
+      toast({ title: 'فشل', description: (e as Error).message, variant: 'destructive' });
     }
   }
+
+  const platformLabels: Record<string, string> = {
+    mobile_android: 'أندرويد',
+    mobile_ios: 'iOS',
+    mobile_huawei: 'هواوي',
+    web: 'الويب',
+    desktop: 'سطح المكتب',
+    backend: 'خلفية',
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Applications</h1>
-          <p className="text-sm text-muted-foreground">Each application represents a client SDK integration (mobile app, web app, backend service).</p>
+          <h1 className="text-2xl font-semibold tracking-tight">التطبيقات</h1>
+          <p className="text-sm text-muted-foreground">كل تطبيق يمثل تكامل SDK عميل (تطبيق هاتف، تطبيق ويب، خدمة خلفية).</p>
         </div>
-        <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" /> New application</Button>
+        <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 ml-2" /> تطبيق جديد</Button>
       </div>
       {loading ? (
         <Skeleton className="h-64" />
       ) : rows.length === 0 ? (
-        <EmptyState title="No applications" />
+        <EmptyState title="لا توجد تطبيقات" />
       ) : (
         <Card><CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="border-b border-border bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th className="text-left font-medium px-4 py-2.5">Name</th>
-                  <th className="text-left font-medium px-4 py-2.5">Project</th>
-                  <th className="text-left font-medium px-4 py-2.5">Platform</th>
-                  <th className="text-right font-medium px-4 py-2.5">Devices</th>
-                  <th className="text-right font-medium px-4 py-2.5">Notifications</th>
+                  <th className="text-right font-medium px-4 py-2.5">الاسم</th>
+                  <th className="text-right font-medium px-4 py-2.5">المشروع</th>
+                  <th className="text-right font-medium px-4 py-2.5">المنصة</th>
+                  <th className="text-right font-medium px-4 py-2.5">الأجهزة</th>
+                  <th className="text-right font-medium px-4 py-2.5">الإشعارات</th>
                 </tr>
               </thead>
               <tbody>
@@ -175,7 +184,7 @@ export function AppsSection() {
                       <code className="text-xs text-muted-foreground">{a.slug}</code>
                     </td>
                     <td className="px-4 py-2.5 text-xs">{a.project.name}</td>
-                    <td className="px-4 py-2.5"><code className="text-xs">{a.platform}</code></td>
+                    <td className="px-4 py-2.5"><code className="text-xs">{platformLabels[a.platform] ?? a.platform}</code></td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{a._count.devices}</td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{a._count.notifications}</td>
                   </tr>
@@ -185,30 +194,30 @@ export function AppsSection() {
           </div>
         </CardContent></Card>
       )}
-      <CreateDialog open={open} onOpenChange={setOpen} title="Create application" description="Apps map to client SDK integrations." onSubmit={submit}>
+      <CreateDialog open={open} onOpenChange={setOpen} title="إنشاء تطبيق" description="التطبيقات تتوافق مع تكاملات SDK العميل." onSubmit={submit}>
         <div className="space-y-3">
           <div>
-            <Label>Project</Label>
+            <Label>المشروع</Label>
             <Select value={form.projectId} onValueChange={(v) => setForm({ ...form, projectId: v })}>
-              <SelectTrigger><SelectValue placeholder="Select project" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="اختر مشروعاً" /></SelectTrigger>
               <SelectContent>{projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div>
-            <Label>Name</Label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="My Android App" />
+            <Label>الاسم</Label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="تطبيق أندرويد" />
           </div>
           <div>
-            <Label>Platform</Label>
+            <Label>المنصة</Label>
             <Select value={form.platform} onValueChange={(v) => setForm({ ...form, platform: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="mobile_android">Android</SelectItem>
+                <SelectItem value="mobile_android">أندرويد</SelectItem>
                 <SelectItem value="mobile_ios">iOS</SelectItem>
-                <SelectItem value="mobile_huawei">Huawei</SelectItem>
-                <SelectItem value="web">Web</SelectItem>
-                <SelectItem value="desktop">Desktop</SelectItem>
-                <SelectItem value="backend">Backend</SelectItem>
+                <SelectItem value="mobile_huawei">هواوي</SelectItem>
+                <SelectItem value="web">الويب</SelectItem>
+                <SelectItem value="desktop">سطح المكتب</SelectItem>
+                <SelectItem value="backend">خلفية</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -254,17 +263,17 @@ export function ApiKeysSection() {
       setForm({ ...form, name: '' });
       load();
     } catch (e) {
-      toast({ title: 'Failed', description: (e as Error).message, variant: 'destructive' });
+      toast({ title: 'فشل', description: (e as Error).message, variant: 'destructive' });
     }
   }
 
   async function revoke(id: string) {
     try {
       await dashboardApi.revokeApiKey(id);
-      toast({ title: 'API key revoked' });
+      toast({ title: 'تم إلغاء مفتاح API' });
       load();
     } catch (e) {
-      toast({ title: 'Failed', description: (e as Error).message, variant: 'destructive' });
+      toast({ title: 'فشل', description: (e as Error).message, variant: 'destructive' });
     }
   }
 
@@ -272,27 +281,27 @@ export function ApiKeysSection() {
     <div className="space-y-4">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">API Keys</h1>
-          <p className="text-sm text-muted-foreground">Scoped credentials used by client SDKs. The full key is shown only once at creation time.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">مفاتيح API</h1>
+          <p className="text-sm text-muted-foreground">مفاتيح بمصادقة مُحدَّدة النطاق يستخدمها SDK العميل. المفتاح الكامل يظهر مرة واحدة فقط عند الإنشاء.</p>
         </div>
-        <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" /> New API key</Button>
+        <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 ml-2" /> مفتاح جديد</Button>
       </div>
       {loading ? (
         <Skeleton className="h-64" />
       ) : rows.length === 0 ? (
-        <EmptyState title="No API keys" />
+        <EmptyState title="لا توجد مفاتيح API" />
       ) : (
         <Card><CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="border-b border-border bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th className="text-left font-medium px-4 py-2.5">Name</th>
-                  <th className="text-left font-medium px-4 py-2.5">Prefix</th>
-                  <th className="text-left font-medium px-4 py-2.5">Project</th>
-                  <th className="text-left font-medium px-4 py-2.5">Scopes</th>
-                  <th className="text-right font-medium px-4 py-2.5">Rate limit</th>
-                  <th className="text-left font-medium px-4 py-2.5">Last used</th>
+                  <th className="text-right font-medium px-4 py-2.5">الاسم</th>
+                  <th className="text-right font-medium px-4 py-2.5">البادئة</th>
+                  <th className="text-right font-medium px-4 py-2.5">المشروع</th>
+                  <th className="text-right font-medium px-4 py-2.5">النطاقات</th>
+                  <th className="text-right font-medium px-4 py-2.5">حد المعدل</th>
+                  <th className="text-right font-medium px-4 py-2.5">آخر استخدام</th>
                   <th className="px-4 py-2.5"></th>
                 </tr>
               </thead>
@@ -301,7 +310,7 @@ export function ApiKeysSection() {
                   <tr key={k.id} className="border-b border-border/50 hover:bg-muted/30">
                     <td className="px-4 py-2.5">
                       <div className="font-medium">{k.name}</div>
-                      <div className="text-xs text-muted-foreground capitalize">{k.status}</div>
+                      <div className="text-xs text-muted-foreground capitalize">{k.status === 'revoked' ? 'مُلغى' : k.status === 'active' ? 'نشط' : k.status}</div>
                     </td>
                     <td className="px-4 py-2.5"><code className="text-xs">{k.keyPrefix}…</code></td>
                     <td className="px-4 py-2.5 text-xs">{k.project?.name ?? '—'}</td>
@@ -313,8 +322,8 @@ export function ApiKeysSection() {
                         {k.scopes.length > 3 && <span className="text-[10px] text-muted-foreground">+{k.scopes.length - 3}</span>}
                       </div>
                     </td>
-                    <td className="px-4 py-2.5 text-right tabular-nums text-xs">{k.rateLimit}/min</td>
-                    <td className="px-4 py-2.5 text-xs text-muted-foreground">{k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleString() : 'never'}</td>
+                    <td className="px-4 py-2.5 text-right tabular-nums text-xs">{k.rateLimit}/دقيقة</td>
+                    <td className="px-4 py-2.5 text-xs text-muted-foreground">{k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleString('ar-EG') : 'أبداً'}</td>
                     <td className="px-4 py-2.5">
                       <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => revoke(k.id)}>
                         <Trash2 className="h-3.5 w-3.5" />
@@ -327,25 +336,25 @@ export function ApiKeysSection() {
           </div>
         </CardContent></Card>
       )}
-      <CreateDialog open={open} onOpenChange={setOpen} title="Create API key" description="The full key will be shown ONCE after creation." onSubmit={submit}>
+      <CreateDialog open={open} onOpenChange={setOpen} title="إنشاء مفتاح API" description="المفتاح الكامل سيظهر مرة واحدة فقط بعد الإنشاء." onSubmit={submit}>
         <div className="space-y-3">
           <div>
-            <Label>Project</Label>
+            <Label>المشروع</Label>
             <Select value={form.projectId} onValueChange={(v) => setForm({ ...form, projectId: v })}>
-              <SelectTrigger><SelectValue placeholder="Select project" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="اختر مشروعاً" /></SelectTrigger>
               <SelectContent>{projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div>
-            <Label>Name</Label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Production server key" />
+            <Label>الاسم</Label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="مفتاح خادم الإنتاج" />
           </div>
           <div>
-            <Label>Rate limit (requests per minute)</Label>
+            <Label>حد المعدل (طلب لكل دقيقة)</Label>
             <Input type="number" value={form.rateLimit} onChange={(e) => setForm({ ...form, rateLimit: e.target.value })} />
           </div>
           <div className="rounded-md bg-muted/40 p-3 text-xs text-muted-foreground">
-            New keys default to all scopes (<code>*</code>). Use the public API to create keys with restricted scopes.
+            المفاتيح الجديدة تكون افتراضياً بكل النطاقات (<code>*</code>). استخدم الـ API العام لإنشاء مفاتيح بنطاقات محدودة.
           </div>
         </div>
       </CreateDialog>
@@ -353,19 +362,19 @@ export function ApiKeysSection() {
       <Dialog open={!!revealed} onOpenChange={(o) => !o && setRevealed(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5" /> API key created</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><KeyRound className="h-5 w-5" /> تم إنشاء مفتاح API</DialogTitle>
             <DialogDescription>
-              Copy your new API key now. <strong className="text-foreground">You will not be able to see it again.</strong>
+              انسخ مفتاح API الجديد الآن. <strong className="text-foreground">لن تتمكن من رؤيته مرة أخرى.</strong>
             </DialogDescription>
           </DialogHeader>
           {revealed && (
             <div className="space-y-3">
               <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3">
-                <div className="mb-1 text-xs text-muted-foreground">Name</div>
+                <div className="mb-1 text-xs text-muted-foreground">الاسم</div>
                 <div className="font-medium">{revealed.name}</div>
               </div>
               <div className="rounded-md border border-border bg-muted p-3">
-                <div className="mb-1 text-xs text-muted-foreground">Full API key</div>
+                <div className="mb-1 text-xs text-muted-foreground">المفتاح الكامل</div>
                 <code className="block break-all text-xs">{revealed.key}</code>
               </div>
               <Button
@@ -373,10 +382,10 @@ export function ApiKeysSection() {
                 className="w-full"
                 onClick={() => {
                   navigator.clipboard.writeText(revealed.key);
-                  toast({ title: 'Copied to clipboard' });
+                  toast({ title: 'تم النسخ' });
                 }}
               >
-                <Copy className="h-4 w-4 mr-2" /> Copy key
+                <Copy className="h-4 w-4 ml-2" /> نسخ المفتاح
               </Button>
             </div>
           )}
@@ -419,28 +428,40 @@ export function TemplatesSection() {
         body: form.body,
         description: form.description || undefined,
       });
-      toast({ title: 'Template created' });
+      toast({ title: 'تم إنشاء القالب' });
       setOpen(false);
       setForm({ ...form, name: '', slug: '', subject: '', body: '', description: '' });
       load();
     } catch (e) {
-      toast({ title: 'Failed', description: (e as Error).message, variant: 'destructive' });
+      toast({ title: 'فشل', description: (e as Error).message, variant: 'destructive' });
     }
   }
+
+  const channelLabels: Record<string, string> = {
+    push_android: 'أندرويد (FCM)',
+    push_ios: 'iOS (APNs)',
+    push_huawei: 'هواوي (HMS)',
+    webpush: 'Web Push',
+    email: 'البريد',
+    sms: 'SMS',
+    inapp: 'داخل التطبيق',
+    webhook: 'Webhook',
+    desktop: 'سطح المكتب',
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Templates</h1>
-          <p className="text-sm text-muted-foreground">Reusable, channel-scoped message templates with <code className="text-xs">{`{{variable}}`}</code> interpolation.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">القوالب</h1>
+          <p className="text-sm text-muted-foreground">قوالب رسائل قابلة لإعادة الاستخدام لكل قناة مع استبدال <code className="text-xs">{`{{variable}}`}</code>.</p>
         </div>
-        <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" /> New template</Button>
+        <Button onClick={() => setOpen(true)}><Plus className="h-4 w-4 ml-2" /> قالب جديد</Button>
       </div>
       {loading ? (
         <Skeleton className="h-64" />
       ) : rows.length === 0 ? (
-        <EmptyState title="No templates" hint="Create a template for any channel." />
+        <EmptyState title="لا توجد قوالب" hint="أنشئ قالباً لأي قناة." />
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {rows.map((t) => (
@@ -451,50 +472,50 @@ export function TemplatesSection() {
                     <FileText className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <div className="font-semibold">{t.name}</div>
-                      <code className="text-xs text-muted-foreground">{t.channel} · v{t.version}</code>
+                      <code className="text-xs text-muted-foreground">{channelLabels[t.channel] ?? t.channel} · إصدار {t.version}</code>
                     </div>
                   </div>
                 </div>
-                {t.subject && <div className="mt-3 text-xs"><span className="text-muted-foreground">Subject:</span> {t.subject}</div>}
+                {t.subject && <div className="mt-3 text-xs"><span className="text-muted-foreground">الموضوع:</span> {t.subject}</div>}
                 <pre className="mt-2 max-h-32 overflow-auto rounded-md bg-muted p-2 text-xs whitespace-pre-wrap">{t.body}</pre>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
-      <CreateDialog open={open} onOpenChange={setOpen} title="Create template" description="Reusable content with {{variable}} placeholders." onSubmit={submit}>
+      <CreateDialog open={open} onOpenChange={setOpen} title="إنشاء قالب" description="محتوى قابل لإعادة الاستخدام مع {{variable}}." onSubmit={submit}>
         <div className="space-y-3">
           <div>
-            <Label>Project</Label>
+            <Label>المشروع</Label>
             <Select value={form.projectId} onValueChange={(v) => setForm({ ...form, projectId: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>{projects.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           <div>
-            <Label>Channel</Label>
+            <Label>القناة</Label>
             <Select value={form.channel} onValueChange={(v) => setForm({ ...form, channel: v })}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 {['push_android', 'push_ios', 'push_huawei', 'webpush', 'email', 'sms', 'inapp', 'webhook', 'desktop'].map((c) => (
-                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                  <SelectItem key={c} value={c}>{channelLabels[c] ?? c}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div>
-            <Label>Name</Label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Welcome email" />
+            <Label>الاسم</Label>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="بريد ترحيبي" />
           </div>
           {form.channel === 'email' && (
             <div>
-              <Label>Subject</Label>
-              <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="Welcome to {{app_name}}" />
+              <Label>الموضوع</Label>
+              <Input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="مرحباً {{app_name}}" />
             </div>
           )}
           <div>
-            <Label>Body</Label>
-            <Textarea rows={6} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder="Hello {{name}}, …" />
+            <Label>المحتوى</Label>
+            <Textarea rows={6} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder="مرحباً {{name}}، …" />
           </div>
         </div>
       </CreateDialog>
@@ -519,8 +540,8 @@ function CreateDialog({ open, onOpenChange, title, description, onSubmit, childr
         </DialogHeader>
         {children}
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={onSubmit}>Create</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>إلغاء</Button>
+          <Button onClick={onSubmit}>إنشاء</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

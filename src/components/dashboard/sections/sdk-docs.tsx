@@ -22,32 +22,30 @@ export function SdkDocsSection() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">SDK & Documentation</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">SDK والوثائق</h1>
         <p className="text-sm text-muted-foreground max-w-3xl">
-          Strongly-typed SDKs for every major platform. The TypeScript SDK is shown below;
-          Rust, Go, Python, Java, Kotlin, Swift, C#, PHP, Flutter, React Native, and Unity follow the same shape.
+          SDKs بأنواع قوية لكل المنصات الرئيسية. SDK TypeScript معروض أدناه؛
+          Rust و Go و Python و Java و Kotlin و Swift و C# و PHP و Flutter و React Native و Unity تتبع نفس الشكل.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><KeyRound className="h-4 w-4" /> Your master API key</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base"><KeyRound className="h-4 w-4" /> مفتاح API الرئيسي الخاص بك</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <Skeleton className="h-10 w-full" />
           ) : (
             <div className="flex items-center gap-2">
-              <code className="flex-1 rounded-md border border-border bg-muted px-3 py-2 text-xs break-all">
-                {masterKey ?? 'not available'}
-              </code>
+              <code className="flex-1 rounded-md border border-border bg-muted px-3 py-2 text-xs break-all">{masterKey ?? 'غير متاح'}</code>
               <Button
                 variant="outline"
                 size="icon"
                 onClick={() => {
                   if (masterKey) {
                     navigator.clipboard.writeText(masterKey);
-                    toast({ title: 'Copied' });
+                    toast({ title: 'تم النسخ' });
                   }
                 }}
               >
@@ -56,7 +54,7 @@ export function SdkDocsSection() {
             </div>
           )}
           <p className="mt-2 text-xs text-muted-foreground">
-            This key has all scopes. Use it for local development only — create scoped keys from the API Keys tab for production.
+            هذا المفتاح يملك كل النطاقات. استخدمه للتطوير المحلي فقط — أنشئ مفاتيح محدودة النطاق من تبويب مفاتيح API للإنتاج.
           </p>
         </CardContent>
       </Card>
@@ -64,27 +62,27 @@ export function SdkDocsSection() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base"><Code2 className="h-4 w-4" /> TypeScript SDK — install</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base"><Code2 className="h-4 w-4" /> SDK TypeScript — التثبيت</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="rounded-md bg-muted p-4 text-xs overflow-auto">{`npm install @notifyforge/sdk
-# or
+            <pre className="rounded-md bg-muted p-4 text-xs overflow-auto ltr-content">{`npm install @notifyforge/sdk
+# أو
 yarn add @notifyforge/sdk
-# or
+# أو
 bun add @notifyforge/sdk`}</pre>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base"><BookOpen className="h-4 w-4" /> TypeScript SDK — quickstart</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base"><BookOpen className="h-4 w-4" /> SDK TypeScript — البدء السريع</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="rounded-md bg-muted p-4 text-xs overflow-auto">{`import { NotifyForge } from '@notifyforge/sdk';
+            <pre className="rounded-md bg-muted p-4 text-xs overflow-auto ltr-content">{`import { NotifyForge } from '@notifyforge/sdk';
 
 const nf = new NotifyForge({ apiKey: process.env.NOTIFYFORGE_API_KEY! });
 
-// 1. Register a device (mobile SDK does this automatically)
+// 1. تسجيل جهاز (SDK الهاتف يفعل ذلك تلقائياً)
 await nf.devices.register({
   channel: 'push_android',
   token: '<FCM token>',
@@ -93,26 +91,26 @@ await nf.devices.register({
   appVersion: '1.4.2',
 });
 
-// 2. Send an Android push
+// 2. إرسال Push لأندرويد
 const { id } = await nf.push.send({
   channel: 'push_android',
   target: { externalUserId: 'user-001' },
   payload: {
-    title: 'Order shipped',
-    body: 'Your order #12345 is on the way.',
+    title: 'تم شحن الطلب',
+    body: 'طلبك رقم 12345 في الطريق.',
     data: { orderId: '12345' },
     android: { priority: 'high', collapseKey: 'order-status' },
   },
 });
 
-// 3. Send an email — explicitly, never auto-routed
+// 3. إرسال بريد — بشكل صريح، بلا إعادة توجيه
 await nf.email.send({
   target: { email: 'customer@example.com' },
   payload: {
     from: 'notifications@notifyforge.dev',
     to: 'customer@example.com',
-    subject: 'Receipt #12345',
-    html: '<h1>Thanks!</h1>',
+    subject: 'إيصال #12345',
+    html: '<h1>شكراً!</h1>',
   },
 });`}</pre>
           </CardContent>
@@ -120,14 +118,14 @@ await nf.email.send({
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base"><BookOpen className="h-4 w-4" /> iOS (APNs) — full feature set</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base"><BookOpen className="h-4 w-4" /> iOS (APNs) — الميزات الكاملة</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="rounded-md bg-muted p-4 text-xs overflow-auto">{`await nf.push.send({
+            <pre className="rounded-md bg-muted p-4 text-xs overflow-auto ltr-content">{`await nf.push.send({
   channel: 'push_ios',
   target: { externalUserId: 'user-001' },
   payload: {
-    alert: { title: 'New message', body: 'Sarah sent a photo' },
+    alert: { title: 'رسالة جديدة', body: 'سارة أرسلت صورة' },
     badge: 3,
     sound: 'default',
     category: 'MESSAGE_CATEGORY',
@@ -146,10 +144,10 @@ await nf.email.send({
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base"><BookOpen className="h-4 w-4" /> Webhook with HMAC verification</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-base"><BookOpen className="h-4 w-4" /> Webhook مع التحقق من HMAC</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="rounded-md bg-muted p-4 text-xs overflow-auto">{`// Sender
+            <pre className="rounded-md bg-muted p-4 text-xs overflow-auto ltr-content">{`// المُرسِل
 await nf.webhook.send({
   target: {},
   payload: {
@@ -161,7 +159,7 @@ await nf.webhook.send({
   },
 });
 
-// Receiver (must verify signature)
+// المستلِم (يجب التحقق من التوقيع)
 import crypto from 'node:crypto';
 
 function verifyNotifyForgeSignature(
@@ -187,7 +185,7 @@ function verifyNotifyForgeSignature(
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><Boxes className="h-4 w-4" /> Available SDKs</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base"><Boxes className="h-4 w-4" /> SDKs المتاحة</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
@@ -198,19 +196,19 @@ function verifyNotifyForgeSignature(
             ))}
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            All SDKs share an identical API shape and are auto-generated from the same OpenAPI spec.
-            Each SDK exposes strongly-typed <code>nf.push</code>, <code>nf.email</code>, <code>nf.sms</code>,
-            <code>nf.webpush</code>, <code>nf.inapp</code>, <code>nf.webhook</code>, <code>nf.desktop</code> clients.
+            كل الـ SDKs تشترك في شكل API متطابق وتُولَّد تلقائياً من نفس مواصفة OpenAPI.
+            كل SDK يعرض عملاء بأنواع قوية: <code>nf.push</code>، <code>nf.email</code>، <code>nf.sms</code>،
+            <code>nf.webpush</code>، <code>nf.inapp</code>، <code>nf.webhook</code>، <code>nf.desktop</code>.
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Architecture overview</CardTitle>
+          <CardTitle className="text-base">نظرة عامة على البنية المعمارية</CardTitle>
         </CardHeader>
         <CardContent>
-          <pre className="rounded-md bg-muted p-4 text-xs overflow-auto">{`┌─────────────────────────────────────────────────────────────────┐
+          <pre className="rounded-md bg-muted p-4 text-xs overflow-auto ltr-content">{`┌─────────────────────────────────────────────────────────────────┐
 │                          Client SDKs                             │
 │   TS/JS · Python · Go · Rust · Java · Kotlin · Swift · C# · …    │
 └──────────────┬──────────────────────────────────────────────────┘
