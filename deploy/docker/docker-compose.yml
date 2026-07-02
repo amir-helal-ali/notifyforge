@@ -1,0 +1,190 @@
+# NotifyForge — Production-grade Notification Infrastructure Platform
+# Docker Compose stack for local development and CI.
+#
+# In production each service runs as a separate Deployment in Kubernetes.
+# This compose file preserves the same service boundaries so developers
+# can run the full stack locally.
+#
+# Usage:
+#   docker compose up -d
+#   docker compose logs -f api
+#   docker compose down
+
+version: '3.9'
+
+services:
+  # ───────────────────────────────────────────────────────────────────
+  # Datastores
+  # ───────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: notifyforge
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-notifyforge}
+      POSTGRES_DB: notifyforge
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notifyforge"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.3-alpine
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_USER: notifyforge
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-notifyforge}
+      CLICKHOUSE_DB: notifyforge_analytics
+    ports:
+      - "8123:8123"  # HTTP
+      - "9000:9000"  # native
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./clickhouse/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8123/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:RELEASE.2024-09-13T20-26-02Z
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: notifyforge
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-notifyforge}
+    ports:
+      - "9000-9001:9000-9001"
+    volumes:
+      - minio-data:/data
+
+  # ───────────────────────────────────────────────────────────────────
+  # Observability
+  # ───────────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: grafana-clickhouse-datasource
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - clickhouse
+
+  loki:
+    image: grafana/loki:3.1.2
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki-data:/loki
+
+  # ───────────────────────────────────────────────────────────────────
+  # API Gateway + Channel Engines (single binary in this reference impl,
+  # but each can be split into a separate deployment by setting CHANNEL_FOCUS).
+  # ───────────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://notifyforge:${POSTGRES_PASSWORD:-notifyforge}@postgres:5432/notifyforge
+      REDIS_URL: redis://redis:6379
+      CLICKHOUSE_URL: http://clickhouse:8123
+      CLICKHOUSE_USER: notifyforge
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-notifyforge}
+      WEBHOOK_DEFAULT_SIGNING_KEY: ${WEBHOOK_SIGNING_KEY:-change-me-in-prod}
+      # Channel-specific credentials (all optional — engines degrade gracefully)
+      FCM_SERVICE_ACCOUNT_JSON: ${FCM_SERVICE_ACCOUNT_JSON:-}
+      APNS_KEY_ID: ${APNS_KEY_ID:-}
+      APNS_TEAM_ID: ${APNS_TEAM_ID:-}
+      APNS_PRIVATE_KEY_PATH: ${APNS_PRIVATE_KEY_PATH:-}
+      APNS_BUNDLE_ID: ${APNS_BUNDLE_ID:-}
+      HMS_APP_ID: ${HMS_APP_ID:-}
+      HMS_APP_SECRET: ${HMS_APP_SECRET:-}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_FROM: ${TWILIO_FROM:-}
+      WEBPUSH_VAPID_PUBLIC_KEY: ${WEBPUSH_VAPID_PUBLIC_KEY:-}
+      WEBPUSH_VAPID_PRIVATE_KEY: ${WEBPUSH_VAPID_PRIVATE_KEY:-}
+      WEBPUSH_SUBJECT: ${WEBPUSH_SUBJECT:-mailto:admin@notifyforge.dev}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Worker — same image, runs the queue consumer instead of the API server.
+  worker:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    restart: unless-stopped
+    command: ["bun", "run", "worker:start"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://notifyforge:${POSTGRES_PASSWORD:-notifyforge}@postgres:5432/notifyforge
+      REDIS_URL: redis://redis:6379
+      CLICKHOUSE_URL: http://clickhouse:8123
+      ROLE: worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  redis-data:
+  clickhouse-data:
+  minio-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:

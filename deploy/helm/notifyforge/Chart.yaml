@@ -1,0 +1,24 @@
+apiVersion: v2
+name: notifyforge
+description: NotifyForge — Production-grade Notification Infrastructure Platform (Helm chart)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+home: https://notifyforge.dev
+sources:
+  - https://github.com/notifyforge/notifyforge
+maintainers:
+  - name: NotifyForge Team
+    email: hello@notifyforge.dev
+keywords:
+  - notifications
+  - push
+  - fcm
+  - apns
+  - huawei
+  - email
+  - sms
+  - webpush
+  - inapp
+  - webhook
+  - infrastructure

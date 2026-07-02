@@ -1,0 +1,132 @@
+# NotifyForge Helm chart values
+# Override these in your own values.yaml or via --set.
+
+image:
+  registry: ghcr.io
+  repository: notifyforge/api
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+api:
+  replicas: 3
+  resources:
+    requests: { cpu: 250m, memory: 512Mi }
+    limits:   { cpu: 1000m, memory: 1Gi }
+  hpa:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 50
+    targetCPUUtilization: 70
+
+worker:
+  replicas: 5
+  resources:
+    requests: { cpu: 500m, memory: 1Gi }
+    limits:   { cpu: 2000m, memory: 2Gi }
+  hpa:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 100
+    targetCPUUtilization: 75
+    queueDepthTarget: 100
+
+database:
+  external:
+    enabled: false
+    url: ""
+  postgresql:
+    enabled: true
+    auth:
+      username: notifyforge
+      password: change-me
+      database: notifyforge
+    primary:
+      persistence:
+        size: 50Gi
+        storageClass: ""
+
+redis:
+  external:
+    enabled: false
+    url: ""
+  redis:
+    enabled: true
+    auth:
+      enabled: true
+      password: change-me
+    master:
+      persistence:
+        size: 20Gi
+
+clickhouse:
+  enabled: true
+  image: clickhouse/clickhouse-server:24.3-alpine
+  auth:
+    username: notifyforge
+    password: change-me
+  persistence:
+    size: 100Gi
+    storageClass: ""
+
+minio:
+  enabled: true
+  auth:
+    rootUser: notifyforge
+    rootPassword: change-me
+  persistence:
+    size: 50Gi
+
+observability:
+  prometheus:
+    enabled: true
+    retention: 30d
+    storage: 50Gi
+  grafana:
+    enabled: true
+    adminPassword: change-me
+  loki:
+    enabled: true
+    retention: 14d
+
+channels:
+  fcm:    { serviceAccountJson: "" }
+  apns:   { keyId: "", teamId: "", bundleId: "", privateKey: "" }
+  huawei: { appId: "", appSecret: "" }
+  sendgrid: { apiKey: "" }
+  twilio:
+    accountSid: ""
+    authToken: ""
+    from: ""
+  webpush:
+    vapidPublicKey: ""
+    vapidPrivateKey: ""
+    subject: "mailto:admin@notifyforge.dev"
+
+security:
+  webhookSigningKey: "change-me-in-prod"
+  ipAllowlist: ""
+  rbac:
+    enabled: true
+
+ingress:
+  enabled: true
+  className: nginx
+  host: api.notifyforge.dev
+  tls:
+    enabled: true
+    issuer: letsencrypt-prod
+  annotations:
+    nginx.ingress.kubernetes.io/rate-limit-connections: "100"
+    nginx.ingress.kubernetes.io/rate-limit-requests: "1000"
+
+pdb:
+  api:    { minAvailable: 2 }
+  worker: { minAvailable: 3 }
+
+networkPolicy:
+  enabled: true
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

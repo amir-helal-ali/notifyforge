@@ -1,0 +1,31 @@
+{
+  "name": "@notifyforge/sdk",
+  "version": "1.0.0",
+  "description": "Official NotifyForge TypeScript SDK — strongly-typed notification infrastructure client for push (FCM/APNs/Huawei), email, SMS, web push, in-app, webhooks, and desktop.",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "notifyforge", "notifications", "push", "fcm", "apns", "huawei", "hms",
+    "email", "sms", "webpush", "inapp", "webhook", "desktop", "infrastructure"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "tsup": "^8.0.0",
+    "vitest": "^1.0.0"
+  }
+}

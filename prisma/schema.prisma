@@ -1,0 +1,328 @@
+// =====================================================================
+// NotifyForge — Production Notification Infrastructure Platform
+// Multi-tenant schema: Organization → Project → Application → API Key
+// Channel isolation: each notification log is bound to exactly one channel
+// =====================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------
+// Identity & Tenancy
+// ---------------------------------------------------------------------
+
+model Organization {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  plan        String   @default("free") // free | pro | enterprise
+  status      String   @default("active") // active | suspended | deleted
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  projects    Project[]
+  apiKeys     ApiKey[]
+  auditLogs   AuditLog[]
+}
+
+model User {
+  id              String   @id @default(cuid())
+  orgId           String
+  email           String   @unique
+  passwordHash    String
+  name            String?
+  role            String   @default("member") // owner | admin | developer | viewer
+  status          String   @default("active")
+  lastLoginAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  apiKeys         ApiKey[]
+  auditLogs       AuditLog[]
+}
+
+// ---------------------------------------------------------------------
+// Hierarchy: Project → Application → API Key
+// ---------------------------------------------------------------------
+
+model Project {
+  id          String   @id @default(cuid())
+  orgId       String
+  name        String
+  slug        String
+  description String?
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  organization Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  applications Application[]
+  apiKeys      ApiKey[]
+  devices      Device[]
+  notifications Notification[]
+  templates    Template[]
+  webhooks     WebhookEndpoint[]
+  auditLogs    AuditLog[]
+
+  @@unique([orgId, slug])
+  @@index([orgId])
+}
+
+model Application {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  slug        String
+  platform    String   // mobile_android | mobile_ios | mobile_huawei | web | desktop | backend
+  description String?
+  metadata    String?  // JSON-encoded
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  devices       Device[]
+  apiKeys       ApiKey[]
+  notifications Notification[]
+
+  @@unique([projectId, slug])
+  @@index([projectId])
+}
+
+model ApiKey {
+  id           String   @id @default(cuid())
+  orgId        String
+  projectId    String?
+  applicationId String?
+  userId       String?
+  keyPrefix    String   // first 12 chars, used for lookup
+  keyHash      String   // bcrypt-style hash of the full key
+  name         String
+  scopes       String   // JSON array of scopes e.g. ["push:send","email:send"]
+  rateLimit    Int      @default(1000) // requests per minute
+  status       String   @default("active")
+  lastUsedAt   DateTime?
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  organization Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  project      Project?         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  application  Application?     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  user         User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@unique([keyPrefix])
+  @@index([orgId, projectId])
+}
+
+// ---------------------------------------------------------------------
+// Device Registry — channel-agnostic device/token store
+// ---------------------------------------------------------------------
+
+model Device {
+  id            String   @id @default(cuid())
+  projectId     String
+  applicationId String
+  externalUserId String?  // user identifier in the customer's system
+  channel       String   // push_android | push_ios | push_huawei | webpush | desktop | inapp
+  token         String   // push token / webpush endpoint / device id
+  tokenStatus   String   @default("active") // active | invalid | expired | uninstalled
+  platform      String?  // android | ios | web | windows | macos | linux
+  appVersion    String?
+  language      String?
+  timezone      String?
+  tags          String?  // JSON array
+  attributes    String?  // JSON object
+  lastSeenAt    DateTime?
+  invalidatedAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  application   Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@unique([applicationId, channel, token])
+  @@index([projectId, channel])
+  @@index([projectId, externalUserId])
+  @@index([tokenStatus])
+}
+
+// ---------------------------------------------------------------------
+// Notification — single channel, single dispatch unit
+// ---------------------------------------------------------------------
+
+model Notification {
+  id           String   @id @default(cuid())
+  orgId        String
+  projectId    String
+  applicationId String?
+  apiKeyId     String?
+  channel      String   // push_android | push_ios | push_huawei | webpush | email | sms | inapp | webhook | desktop
+  externalId   String?  // customer-provided id for idempotency
+  status       String   @default("queued") // queued | processing | sent | delivered | failed | cancelled
+  priority     String   @default("normal") // low | normal | high | critical
+  payload      String   // JSON-encoded channel-specific payload
+  target       String   // JSON-encoded target spec (device_id | user_id | topic | email | phone | url)
+  provider     String?  // fcm | apns | huawei | twilio | sendgrid | ...
+  providerMessageId String?
+  attemptCount Int      @default(0)
+  maxAttempts  Int      @default(3)
+  scheduledAt  DateTime?
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  failedAt     DateTime?
+  errorMessage  String?
+  errorCode     String?
+  ttlSeconds   Int?
+  collapseKey  String?
+  tags         String?  // JSON array
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project       Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  application   Application?    @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  apiKey        ApiKey?         @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  device        Device?         @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  deviceId      String?
+  logs          NotificationLog[]
+  events        NotificationEvent[]
+
+  @@index([orgId, channel, status, createdAt])
+  @@index([projectId, status])
+  @@index([externalId])
+  @@index([status, scheduledAt])
+}
+
+model NotificationLog {
+  id             String   @id @default(cuid())
+  notificationId String
+  level          String   // info | warn | error | debug
+  stage          String   // ingest | validate | queue | dispatch | provider | retry | finalize
+  message        String
+  meta           String?  // JSON
+  createdAt      DateTime @default(now())
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId, createdAt])
+  @@index([level, createdAt])
+}
+
+model NotificationEvent {
+  id             String   @id @default(cuid())
+  notificationId String
+  type           String   // created | queued | processing | sent | delivered | bounced | failed | cancelled | opened | clicked
+  meta           String?
+  createdAt      DateTime @default(now())
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId, createdAt])
+  @@index([type, createdAt])
+}
+
+// ---------------------------------------------------------------------
+// Templates — per-channel reusable content
+// ---------------------------------------------------------------------
+
+model Template {
+  id          String   @id @default(cuid())
+  projectId   String
+  channel     String
+  name        String
+  slug        String
+  description String?
+  subject     String?  // email
+  body        String   // template body with {{variables}}
+  variables   String?  // JSON schema of variables
+  locale      String?  // i18n
+  version     Int      @default(1)
+  status      String   @default("active") // active | draft | archived
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, slug, version])
+  @@index([projectId, channel])
+}
+
+// ---------------------------------------------------------------------
+// Webhook Endpoints (for /webhook/send channel)
+// ---------------------------------------------------------------------
+
+model WebhookEndpoint {
+  id           String   @id @default(cuid())
+  projectId    String
+  name         String
+  url          String
+  method       String   @default("POST")
+  headers      String?  // JSON
+  signingKey   String?  // used to compute HMAC
+  signingAlgo  String   @default("hmac-sha256")
+  status       String   @default("active")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------
+// Audit Log & Rate Limiting
+// ---------------------------------------------------------------------
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  orgId     String
+  userId    String?
+  projectId String?
+  action    String   // e.g. "api_key.create", "project.update"
+  resource  String?
+  ip        String?
+  userAgent String?
+  meta      String?  // JSON
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  project      Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model RateLimitBucket {
+  id        String   @id @default(cuid())
+  bucketKey String   @unique  // e.g. "apikey:{id}:minute:{ts}"
+  tokens    Int      @default(0)
+  limit     Int
+  windowMs  Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
+model MetricSnapshot {
+  id          String   @id @default(cuid())
+  orgId       String
+  projectId   String?
+  channel     String?
+  metric      String   // sent | delivered | failed | queued | latency_p50 | latency_p99
+  value       Float
+  bucket      DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([orgId, channel, bucket])
+  @@index([projectId, bucket])
+}
