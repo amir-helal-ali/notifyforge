@@ -2,7 +2,7 @@
 
 # 🔔 NotifyForge — منصة البنية التحتية للإشعارات
 
-[![CI](https://github.com/notifyforge/notifyforge/actions/workflows/ci.yml/badge.svg)](https://github.com/notifyforge/notifyforge/actions/workflows/ci.yml)
+[![CI](https://github.com/amir-helal-ali/notifyforge/actions/workflows/ci.yml/badge.svg)](https://github.com/amir-helal-ali/notifyforge/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
@@ -80,7 +80,7 @@ TypeScript · JavaScript · Node.js · Python · Go · Rust · Java · Kotlin ·
 ### Install & Run
 
 ```bash
-git clone https://github.com/notifyforge/notifyforge.git
+git clone https://github.com/amir-helal-ali/notifyforge.git
 cd notifyforge
 bun install
 cp .env.example .env
@@ -321,7 +321,7 @@ See [.env.example](.env.example) for the full list.
 | Kotlin          | `dev.notifyforge:notifyforge-kotlin`              | Maven / Gradle (coroutines)                          |
 | Swift           | `NotifyForge`                                     | Swift Package Manager                                |
 | C#              | `NotifyForge`                                     | `dotnet add package NotifyForge`                     |
-| PHP             | `notifyforge/notifyforge-php`                     | `composer require notifyforge/notifyforge-php`       |
+| PHP             | `amir-helal-ali/notifyforge-php`                     | `composer require amir-helal-ali/notifyforge-php`       |
 | Flutter / Dart  | `notifyforge`                                     | `flutter pub add notifyforge`                        |
 
 See [sdk/README.md](sdk/README.md) for details.
@@ -343,7 +343,7 @@ Spins up: PostgreSQL, Redis, ClickHouse, MinIO, Prometheus, Grafana, Loki, API, 
 
 ```bash
 helm repo add notifyforge https://charts.notifyforge.dev
-helm install notifyforge notifyforge/notifyforge \
+helm install notifyforge amir-helal-ali/notifyforge \
   --namespace notifyforge --create-namespace \
   --values my-values.yaml
 ```
@@ -442,8 +442,8 @@ MIT — see [LICENSE](LICENSE).
 
 ## 📞 التواصل
 
-- 🐛 [Issues](https://github.com/notifyforge/notifyforge/issues)
-- 💬 [Discussions](https://github.com/notifyforge/notifyforge/discussions)
+- 🐛 [Issues](https://github.com/amir-helal-ali/notifyforge/issues)
+- 💬 [Discussions](https://github.com/amir-helal-ali/notifyforge/discussions)
 - 📧 security@notifyforge.dev (للثغرات الأمنية فقط)
 
 ---
