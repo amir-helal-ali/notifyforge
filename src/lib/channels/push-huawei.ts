@@ -10,6 +10,7 @@ import { db } from '@/lib/db';
 import type { Notification, PushHuaweiPayload, TargetSpec } from '@/lib/types';
 import type { ChannelEngine, DispatchResult } from '@/lib/channels/registry';
 import { logger } from '@/lib/infra/logger';
+import { sendHuaweiMessage, isHuaweiConfigured } from '@/lib/providers/huawei';
 
 export const huaweiEngine: ChannelEngine<PushHuaweiPayload> = {
   channel: 'push_huawei',
@@ -54,13 +55,26 @@ export const huaweiEngine: ChannelEngine<PushHuaweiPayload> = {
     }
 
     try {
-      const message = {
-        ...payload.message,
-        token: payload.message.token ?? tokens,
-      };
-      logger.info('huawei.dispatch', {
+      if (isHuaweiConfigured()) {
+        // Real HMS Push Kit delivery
+        const result = await sendHuaweiMessage({
+          ...payload.message,
+          token: payload.message.token ?? tokens,
+        });
+        if (!result.ok) {
+          return { errorCode: result.errorCode, errorMessage: result.errorMessage };
+        }
+        return {
+          providerMessageId: result.messageId,
+          deliveredAt: new Date(),
+        };
+      }
+
+      // Simulated mode
+      logger.info('huawei.dispatch_simulated', {
         notificationId: n.id,
         tokens: tokens.length,
+        note: 'Set HMS_APP_ID and HMS_APP_SECRET to enable real delivery',
       });
       const providerMessageId = `huawei:${Buffer.from(n.id).toString('base64url').slice(0, 16)}`;
       return { providerMessageId, deliveredAt: new Date() };

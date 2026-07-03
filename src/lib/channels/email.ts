@@ -8,6 +8,7 @@
 import type { Notification, EmailPayload, TargetSpec } from '@/lib/types';
 import type { ChannelEngine, DispatchResult } from '@/lib/channels/registry';
 import { logger } from '@/lib/infra/logger';
+import { sendSendGridMail, isSendGridConfigured } from '@/lib/providers/sendgrid';
 
 export const emailEngine: ChannelEngine<EmailPayload> = {
   channel: 'email',
@@ -33,26 +34,35 @@ export const emailEngine: ChannelEngine<EmailPayload> = {
   async dispatch(n: Notification, providerTargets: string[]): Promise<DispatchResult> {
     const payload = JSON.parse(n.payload) as EmailPayload;
     try {
-      // SendGrid v3 mail/send envelope
-      const envelope = {
-        personalizations: providerTargets.map((addr) => ({ to: [{ email: addr }] })),
-        from: { email: payload.from },
-        subject: payload.subject,
-        content: [
-          ...(payload.html ? [{ type: 'text/html', value: payload.html }] : []),
-          ...(payload.text ? [{ type: 'text/plain', value: payload.text }] : []),
-        ],
-        ...(payload.replyTo ? { reply_to: { email: payload.replyTo } } : {}),
-        ...(payload.headers ? { headers: payload.headers } : {}),
-        ...(payload.category ? { categories: [payload.category] } : {}),
-        ...(payload.attachments
-          ? { attachments: payload.attachments.map((a) => ({ filename: a.filename, content: a.content, type: a.contentType })) }
-          : {}),
-      };
-      logger.info('email.dispatch', {
+      if (isSendGridConfigured()) {
+        // Real SendGrid delivery
+        const result = await sendSendGridMail({
+          from: payload.from,
+          to: Array.isArray(payload.to) ? payload.to : [payload.to],
+          cc: payload.cc ? (Array.isArray(payload.cc) ? payload.cc : [payload.cc]) : undefined,
+          bcc: payload.bcc ? (Array.isArray(payload.bcc) ? payload.bcc : [payload.bcc]) : undefined,
+          replyTo: payload.replyTo,
+          subject: payload.subject,
+          html: payload.html,
+          text: payload.text,
+          attachments: payload.attachments,
+          headers: payload.headers,
+          category: payload.category,
+          templateId: payload.templateId,
+          templateData: payload.templateData,
+        });
+        if (!result.ok) {
+          return { errorCode: result.errorCode, errorMessage: result.errorMessage };
+        }
+        return { providerMessageId: result.messageId, deliveredAt: new Date() };
+      }
+
+      // Simulated mode
+      logger.info('email.dispatch_simulated', {
         notificationId: n.id,
         recipients: providerTargets.length,
         provider: 'sendgrid',
+        note: 'Set SENDGRID_API_KEY to enable real delivery',
       });
       const providerMessageId = `sendgrid:${Buffer.from(n.id).toString('base64url').slice(0, 16)}`;
       return { providerMessageId, deliveredAt: new Date() };

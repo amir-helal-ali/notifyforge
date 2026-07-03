@@ -14,7 +14,8 @@ import { ProvidersSection } from '@/components/dashboard/sections/providers';
 import { SettingsSection } from '@/components/dashboard/sections/settings';
 import { TeamSection } from '@/components/dashboard/sections/team';
 import { SearchSection } from '@/components/dashboard/sections/search';
-import { Activity, Bell, Send, BarChart3, Smartphone, FolderKanban, AppWindow, KeyRound, FileText, ScrollText, FlaskConical, BookOpen, ShieldCheck, Search, Users, HeartPulse, Sliders } from 'lucide-react';
+import { IntegrationTestSection } from '@/components/dashboard/sections/integration-test';
+import { Activity, Bell, Send, BarChart3, Smartphone, FolderKanban, AppWindow, KeyRound, FileText, ScrollText, FlaskConical, BookOpen, ShieldCheck, Search, Users, HeartPulse, Sliders, Plug } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sun, Moon } from 'lucide-react';
@@ -23,7 +24,7 @@ type SectionId =
   | 'overview' | 'channels' | 'notifications' | 'analytics'
   | 'devices' | 'projects' | 'apps' | 'api-keys' | 'templates'
   | 'audit' | 'playground' | 'sdk-docs'
-  | 'providers' | 'settings' | 'team' | 'search';
+  | 'providers' | 'settings' | 'team' | 'search' | 'integration-test';
 
 interface NavItem {
   id: SectionId;
@@ -44,8 +45,9 @@ const NAV: NavItem[] = [
   { id: 'api-keys',     label: 'مفاتيح API',      icon: <KeyRound className="h-4 w-4" />,       group: 'admin' },
   { id: 'templates',    label: 'القوالب',         icon: <FileText className="h-4 w-4" />,       group: 'admin' },
   { id: 'audit',        label: 'سجل التدقيق',     icon: <ScrollText className="h-4 w-4" />,     group: 'admin' },
-  { id: 'providers',    label: 'صحة المزودين',    icon: <HeartPulse className="h-4 w-4" />,     group: 'system' },
-  { id: 'team',         label: 'الفريق',          icon: <Users className="h-4 w-4" />,          group: 'system' },
+  { id: 'providers',         label: 'صحة المزودين',    icon: <HeartPulse className="h-4 w-4" />,     group: 'system' },
+  { id: 'integration-test',  label: 'اختبار التكامل', icon: <Plug className="h-4 w-4" />,           group: 'system' },
+  { id: 'team',              label: 'الفريق',          icon: <Users className="h-4 w-4" />,          group: 'system' },
   { id: 'settings',     label: 'الإعدادات',       icon: <Sliders className="h-4 w-4" />,        group: 'system' },
   { id: 'playground',   label: 'مختبر API',       icon: <FlaskConical className="h-4 w-4" />,   group: 'developer' },
   { id: 'sdk-docs',     label: 'SDK والوثائق',   icon: <BookOpen className="h-4 w-4" />,       group: 'developer' },
@@ -185,8 +187,9 @@ export default function Home() {
           {section === 'api-keys'      && <ApiKeysSection />}
           {section === 'templates'     && <TemplatesSection />}
           {section === 'audit'         && <AuditSection />}
-          {section === 'providers'     && <ProvidersSection />}
-          {section === 'team'          && <TeamSection />}
+          {section === 'providers'         && <ProvidersSection />}
+          {section === 'integration-test'  && <IntegrationTestSection />}
+          {section === 'team'              && <TeamSection />}
           {section === 'settings'      && <SettingsSection />}
           {section === 'playground'    && <PlaygroundSection />}
           {section === 'sdk-docs'      && <SdkDocsSection />}

@@ -19,6 +19,7 @@ import { db } from '@/lib/db';
 import type { Notification, PushIosPayload, TargetSpec } from '@/lib/types';
 import type { ChannelEngine, DispatchResult } from '@/lib/channels/registry';
 import { logger } from '@/lib/infra/logger';
+import { sendApnsMessage, isApnsConfigured } from '@/lib/providers/apns';
 
 export const apnsEngine: ChannelEngine<PushIosPayload> = {
   channel: 'push_ios',
@@ -91,11 +92,39 @@ export const apnsEngine: ChannelEngine<PushIosPayload> = {
 
       // In production: stream http2 to api.push.apple.com/3/device/{token}
       // with JWT bearer (ES256). Each token = one request (APNs is unicast).
-      logger.info('apns.dispatch', {
+      if (isApnsConfigured()) {
+        // Real APNs delivery
+        const results = await Promise.all(
+          tokens.map((token) =>
+            sendApnsMessage({
+              token,
+              aps,
+              pushType: payload['apns-push-type'],
+              priority: payload['apns-priority'],
+              topic: payload['apns-topic'],
+              collapseId: payload['apns-collapse-id'],
+            }),
+          ),
+        );
+        const firstOk = results.find((r) => r.ok);
+        if (firstOk) {
+          return { providerMessageId: firstOk.messageId, deliveredAt: new Date() };
+        }
+        const firstErr = results[0]!;
+        return {
+          errorCode: firstErr.errorCode,
+          errorMessage: firstErr.errorMessage,
+          invalidateDevice: firstErr.errorCode === 'Unregistered' || firstErr.errorCode === 'BadDeviceToken',
+        };
+      }
+
+      // Simulated mode
+      logger.info('apns.dispatch_simulated', {
         notificationId: n.id,
         tokens: tokens.length,
         pushType,
         priority,
+        note: 'Set APNS_KEY_ID, APNS_TEAM_ID, APNS_PRIVATE_KEY to enable real delivery',
       });
       const providerMessageId = `apns:${Buffer.from(n.id).toString('base64url').slice(0, 16)}`;
       return { providerMessageId, deliveredAt: new Date() };

@@ -11,6 +11,7 @@ import { db } from '@/lib/db';
 import type { Notification, WebPushPayload, TargetSpec } from '@/lib/types';
 import type { ChannelEngine, DispatchResult } from '@/lib/channels/registry';
 import { logger } from '@/lib/infra/logger';
+import { sendWebPushMessage, isWebPushConfigured, type WebPushSubscription } from '@/lib/providers/webpush';
 
 export const webPushEngine: ChannelEngine<WebPushPayload> = {
   channel: 'webpush',
@@ -56,16 +57,61 @@ export const webPushEngine: ChannelEngine<WebPushPayload> = {
     }
 
     try {
-      const message = {
-        payload: JSON.stringify(payload),
-        ttl: n.ttlSeconds ?? 2419200,
-        urgency: payload.urgency ?? 'normal',
-        topic: payload.tag,
-      };
-      logger.info('webpush.dispatch', {
+      if (isWebPushConfigured()) {
+        // Real Web Push delivery — POST aes128gcm-encrypted payload to each endpoint
+        // The Device.token field stores the full subscription JSON for webpush
+        const devices = await db.device.findMany({
+          where: { id: { in: providerTargets } },
+          select: { token: true, tokenStatus: true },
+        });
+        let delivered = 0;
+        let lastError: { code: string; message: string } | null = null;
+        for (const d of devices) {
+          if (d.tokenStatus !== 'active') continue;
+          // Token format: '<endpoint>|<p256dh>|<auth>' or full JSON subscription
+          let subscription: WebPushSubscription;
+          try {
+            const parsed = JSON.parse(d.token);
+            subscription = {
+              endpoint: parsed.endpoint,
+              keys: { p256dh: parsed.keys.p256dh, auth: parsed.keys.auth },
+            };
+          } catch {
+            const parts = d.token.split('|');
+            if (parts.length !== 3) continue;
+            subscription = { endpoint: parts[0]!, keys: { p256dh: parts[1]!, auth: parts[2]! } };
+          }
+          const result = await sendWebPushMessage(subscription, {
+            title: payload.title,
+            body: payload.body,
+            icon: payload.icon,
+            badge: payload.badge,
+            image: payload.image,
+            data: payload.data,
+            actions: payload.actions,
+            tag: payload.tag,
+            requireInteraction: payload.requireInteraction,
+            urgency: payload.urgency,
+            ttl: n.ttlSeconds ?? undefined,
+          });
+          if (result.ok) delivered++;
+          else lastError = { code: result.errorCode ?? 'webpush_error', message: result.errorMessage ?? 'unknown' };
+        }
+        if (delivered > 0) {
+          return { providerMessageId: `webpush:${n.id}`, deliveredAt: new Date() };
+        }
+        return {
+          errorCode: lastError?.code ?? 'no_active_subscriptions',
+          errorMessage: lastError?.message ?? 'No active web push subscriptions.',
+        };
+      }
+
+      // Simulated mode
+      logger.info('webpush.dispatch_simulated', {
         notificationId: n.id,
         endpoints: endpoints.length,
-        urgency: message.urgency,
+        urgency: payload.urgency ?? 'normal',
+        note: 'Set WEBPUSH_VAPID_PUBLIC_KEY and WEBPUSH_VAPID_PRIVATE_KEY to enable real delivery',
       });
       const providerMessageId = `webpush:${Buffer.from(n.id).toString('base64url').slice(0, 16)}`;
       return { providerMessageId, deliveredAt: new Date() };

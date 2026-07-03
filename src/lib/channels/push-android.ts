@@ -13,6 +13,7 @@ import { db } from '@/lib/db';
 import type { Notification, PushAndroidPayload, TargetSpec } from '@/lib/types';
 import type { ChannelEngine, DispatchResult } from '@/lib/channels/registry';
 import { logger } from '@/lib/infra/logger';
+import { sendFcmMessage, isFcmConfigured } from '@/lib/providers/fcm';
 
 export const fcmEngine: ChannelEngine<PushAndroidPayload> = {
   channel: 'push_android',
@@ -62,27 +63,42 @@ export const fcmEngine: ChannelEngine<PushAndroidPayload> = {
     try {
       // Build FCM v1 message envelope
       const message = {
-        message: {
-          token: tokens.length === 1 ? tokens[0] : undefined,
-          tokens: tokens.length > 1 ? tokens : undefined,
-          notification: { title: payload.title, body: payload.body },
-          data: payload.data ?? {},
-          android: {
-            priority: payload.android?.priority ?? (n.priority === 'high' || n.priority === 'critical' ? 'high' : 'normal'),
-            collapseKey: payload.android?.collapseKey ?? n.collapseKey,
-            ttl: payload.android?.ttl ?? (n.ttlSeconds ? `${n.ttlSeconds}s` : undefined),
-          },
-          fcmOptions: payload.fcmOptions,
+        token: tokens.length === 1 ? tokens[0] : undefined,
+        tokens: tokens.length > 1 ? tokens : undefined,
+        notification: { title: payload.title, body: payload.body },
+        data: payload.data ?? {},
+        android: {
+          priority: payload.android?.priority ?? (n.priority === 'high' || n.priority === 'critical' ? 'high' : 'normal'),
+          collapseKey: payload.android?.collapseKey ?? n.collapseKey,
+          ttl: payload.android?.ttl ?? (n.ttlSeconds ? `${n.ttlSeconds}s` : undefined),
         },
+        fcmOptions: payload.fcmOptions,
       };
 
-      // In production: POST to FCM with OAuth2 bearer. Here we record the call.
-      logger.info('fcm.dispatch', {
+      // If FCM is configured with real credentials, send a real push.
+      // Otherwise, fall back to a simulated provider response.
+      if (isFcmConfigured()) {
+        const result = await sendFcmMessage(message);
+        if (!result.ok) {
+          return {
+            errorCode: result.errorCode,
+            errorMessage: result.errorMessage,
+            invalidateDevice: result.errorCode === 'UNREGISTERED' || result.errorCode === 'invalid_registration',
+          };
+        }
+        return {
+          providerMessageId: result.messageId,
+          deliveredAt: new Date(),
+        };
+      }
+
+      // Simulated mode — no credentials configured
+      logger.info('fcm.dispatch_simulated', {
         notificationId: n.id,
         tokens: tokens.length,
         provider: 'fcm',
+        note: 'Set FCM_SERVICE_ACCOUNT_JSON to enable real delivery',
       });
-      // Simulate provider success
       const providerMessageId = `fcm:${Buffer.from(n.id).toString('base64url').slice(0, 16)}`;
       return {
         providerMessageId,
